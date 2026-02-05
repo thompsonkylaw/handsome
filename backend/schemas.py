@@ -6,6 +6,7 @@ from datetime import datetime
 class AssessmentCreate(BaseModel):
     user_email: str
     primary_name: str
+    user_phone: Optional[str] = None
     secondary_name: Optional[str] = None
     is_married: bool
     total_asset_value: float
@@ -19,4 +20,4 @@ class AssessmentResponse(AssessmentCreate):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True

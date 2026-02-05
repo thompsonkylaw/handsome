@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from typing import List
+from sqlalchemy import or_
+from typing import List, Optional
 
 import models
 import schemas
@@ -12,17 +13,12 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Handsome OALA API")
 
-# Configure CORS for local React dev (port 5173 usually) and production
-origins = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    # Add your deployed frontend URL here later, e.g. https://handsome-oala.vercel.app
-]
-
+# Configure CORS
+# allowing all origins for development to prevent OPTIONS 400/403 errors
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -33,9 +29,18 @@ def read_root():
 
 @app.post("/assessments/", response_model=schemas.AssessmentResponse)
 def create_assessment(assessment: schemas.AssessmentCreate, db: Session = Depends(get_db)):
+    # Try to get phone from submission_data if not provided
+    user_phone = assessment.user_phone
+    if not user_phone and assessment.submission_data:
+        # Assuming structure is {p1: {phone: "..."}}
+        p1 = assessment.submission_data.get("p1")
+        if p1 and isinstance(p1, dict):
+            user_phone = p1.get("phone")
+
     db_assessment = models.Assessment(
         user_email=assessment.user_email,
         primary_name=assessment.primary_name,
+        user_phone=user_phone,
         secondary_name=assessment.secondary_name,
         is_married=assessment.is_married,
         total_asset_value=assessment.total_asset_value,
@@ -49,10 +54,25 @@ def create_assessment(assessment: schemas.AssessmentCreate, db: Session = Depend
     return db_assessment
 
 @app.get("/assessments/", response_model=List[schemas.AssessmentResponse])
-def read_assessments(skip: int = 0, limit: int = 100, user_email: str = None, db: Session = Depends(get_db)):
+def read_assessments(
+    skip: int = 0, 
+    limit: int = 100, 
+    user_email: Optional[str] = None, 
+    search: Optional[str] = None,
+    db: Session = Depends(get_db)
+):
     query = db.query(models.Assessment)
     if user_email:
         query = query.filter(models.Assessment.user_email == user_email)
+    
+    if search:
+        search_term = f"%{search}%"
+        query = query.filter(
+            or_(
+                models.Assessment.primary_name.ilike(search_term),
+                models.Assessment.user_phone.ilike(search_term)
+            )
+        )
     
     assessments = query.order_by(models.Assessment.created_at.desc()).offset(skip).limit(limit).all()
     return assessments
