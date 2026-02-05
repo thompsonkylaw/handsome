@@ -23,6 +23,11 @@
 	# health check for railway
 	rewrite /health /*
 
+	# Reverse proxy for the backend API
+	handle /assessments* {
+		reverse_proxy localhost:8000
+	}
+
 	# serve from the 'dist' folder (Vite builds into the 'dist' folder)
 	root * dist
 

@@ -227,7 +227,7 @@ const AssessmentForm = () => {
         submission_data: { p1, p2, isMarried }
       };
 
-      const response = await fetch('http://127.0.0.1:8000/assessments/', {
+      const response = await fetch('/assessments/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
