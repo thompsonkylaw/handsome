@@ -25,7 +25,7 @@
 
 	# Reverse proxy for the backend API
 	handle /assessments* {
-		reverse_proxy localhost:8000
+		reverse_proxy 127.0.0.1:8000
 	}
 
 	# Serve frontend for everything else

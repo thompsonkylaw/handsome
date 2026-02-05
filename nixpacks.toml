@@ -4,6 +4,7 @@
 [variables]
     NPM_CONFIG_UPDATE_NOTIFIER = 'false'
     NPM_CONFIG_FUND = 'false'
+    PYTHONUNBUFFERED = '1'
 
 [phases.setup]
     nixPkgs = ['nodejs', 'python3']
@@ -29,4 +30,4 @@
 
 # start the caddy web server & python backend
 [start]
-    cmd = '(cd backend && uvicorn main:app --host 0.0.0.0 --port 8000) & exec caddy run --config Caddyfile --adapter caddyfile 2>&1'
+    cmd = '(cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 8000) & exec caddy run --config Caddyfile --adapter caddyfile 2>&1'
