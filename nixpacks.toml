@@ -31,4 +31,4 @@
 
 # start the caddy web server & python backend
 [start]
-    cmd = '(cd backend && python -m uvicorn main:app --host 127.0.0.1 --port 8000) & exec caddy run --config Caddyfile --adapter caddyfile 2>&1'
+    cmd = '(cd backend && python -m uvicorn main:app --host 0.0.0.0 --port 8000) & exec caddy run --config Caddyfile --adapter caddyfile 2>&1'
