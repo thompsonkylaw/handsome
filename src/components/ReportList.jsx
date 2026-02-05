@@ -12,7 +12,7 @@ const ReportList = () => {
     setLoading(true);
     try {
       const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
-      const response = await fetch(`http://127.0.0.1:8000/assessments/${query}`);
+      const response = await fetch(`/assessments/${query}`);
       if (response.ok) {
         const data = await response.json();
         setAssessments(data);

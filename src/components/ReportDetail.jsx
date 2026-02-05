@@ -12,7 +12,7 @@ const ReportDetail = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`http://127.0.0.1:8000/assessments/${id}`);
+        const res = await fetch(`/assessments/${id}`);
         if(res.ok) {
             setData(await res.json());
         }
