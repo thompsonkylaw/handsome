@@ -46,29 +46,38 @@ def read_root():
 
 @app.post("/assessments/", response_model=schemas.AssessmentResponse)
 def create_assessment(assessment: schemas.AssessmentCreate, db: Session = Depends(get_db)):
-    # Try to get phone from submission_data if not provided
-    user_phone = assessment.user_phone
-    if not user_phone and assessment.submission_data:
-        # Assuming structure is {p1: {phone: "..."}}
-        p1 = assessment.submission_data.get("p1")
-        if p1 and isinstance(p1, dict):
-            user_phone = p1.get("phone")
+    try:
+        logger.info(f"Creating assessment for user_email: {assessment.user_email}")
+        
+        # Try to get phone from submission_data if not provided
+        user_phone = assessment.user_phone
+        if not user_phone and assessment.submission_data:
+            # Assuming structure is {p1: {phone: "..."}}
+            p1 = assessment.submission_data.get("p1")
+            if p1 and isinstance(p1, dict):
+                user_phone = p1.get("phone")
 
-    db_assessment = models.Assessment(
-        user_email=assessment.user_email,
-        primary_name=assessment.primary_name,
-        user_phone=user_phone,
-        secondary_name=assessment.secondary_name,
-        is_married=assessment.is_married,
-        total_asset_value=assessment.total_asset_value,
-        total_income_value=assessment.total_income_value,
-        is_eligible=assessment.is_eligible,
-        submission_data=assessment.submission_data
-    )
-    db.add(db_assessment)
-    db.commit()
-    db.refresh(db_assessment)
-    return db_assessment
+        db_assessment = models.Assessment(
+            user_email=assessment.user_email,
+            primary_name=assessment.primary_name,
+            user_phone=user_phone,
+            secondary_name=assessment.secondary_name,
+            is_married=assessment.is_married,
+            total_asset_value=assessment.total_asset_value,
+            total_income_value=assessment.total_income_value,
+            is_eligible=assessment.is_eligible,
+            submission_data=assessment.submission_data
+        )
+        db.add(db_assessment)
+        db.commit()
+        db.refresh(db_assessment)
+        
+        logger.info(f"Successfully created assessment with ID: {db_assessment.id}")
+        return db_assessment
+    except Exception as e:
+        logger.error(f"Failed to create assessment: {str(e)}", exc_info=True)
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 @app.get("/assessments/", response_model=List[schemas.AssessmentResponse])
 def read_assessments(
