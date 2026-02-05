@@ -34,6 +34,7 @@ def read_root():
 @app.post("/assessments/", response_model=schemas.AssessmentResponse)
 def create_assessment(assessment: schemas.AssessmentCreate, db: Session = Depends(get_db)):
     db_assessment = models.Assessment(
+        user_email=assessment.user_email,
         primary_name=assessment.primary_name,
         secondary_name=assessment.secondary_name,
         is_married=assessment.is_married,
@@ -48,8 +49,12 @@ def create_assessment(assessment: schemas.AssessmentCreate, db: Session = Depend
     return db_assessment
 
 @app.get("/assessments/", response_model=List[schemas.AssessmentResponse])
-def read_assessments(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
-    assessments = db.query(models.Assessment).order_by(models.Assessment.created_at.desc()).offset(skip).limit(limit).all()
+def read_assessments(skip: int = 0, limit: int = 100, user_email: str = None, db: Session = Depends(get_db)):
+    query = db.query(models.Assessment)
+    if user_email:
+        query = query.filter(models.Assessment.user_email == user_email)
+    
+    assessments = query.order_by(models.Assessment.created_at.desc()).offset(skip).limit(limit).all()
     return assessments
 
 @app.get("/assessments/{assessment_id}", response_model=schemas.AssessmentResponse)

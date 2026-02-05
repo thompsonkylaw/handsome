@@ -4,6 +4,7 @@ from datetime import datetime
 
 # Schema for creating a record
 class AssessmentCreate(BaseModel):
+    user_email: str
     primary_name: str
     secondary_name: Optional[str] = None
     is_married: bool

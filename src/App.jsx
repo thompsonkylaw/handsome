@@ -224,6 +224,9 @@ const App = () => {
   const [p1, setP1] = useState(createEmptyPerson());
   const [p2, setP2] = useState(createEmptyPerson());
   const [showExportMsg, setShowExportMsg] = useState(false);
+  const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | success | error
+
+  const getUserEmail = () => window.root13appSettings?.user_email || "none@gmail.com";
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [step]);
 
@@ -275,6 +278,36 @@ const App = () => {
     link.click();
     setShowExportMsg(true);
     setTimeout(() => setShowExportMsg(false), 3000);
+  };
+
+  const saveToDatabase = async () => {
+    setSaveStatus('saving');
+    try {
+      const payload = {
+        user_email: getUserEmail(),
+        primary_name: p1.name,
+        secondary_name: isMarried ? p2.name : null,
+        is_married: isMarried,
+        total_asset_value: totalAssets,
+        total_income_value: totalIncome,
+        is_eligible: isEligible,
+        submission_data: { p1, p2, isMarried }
+      };
+
+      const response = await fetch('http://127.0.0.1:8000/assessments/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error('Saving failed');
+      
+      setSaveStatus('success');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch (error) {
+      console.error(error);
+      setSaveStatus('error');
+    }
   };
 
   if (step === 'intro') {
@@ -532,7 +565,16 @@ const App = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button 
+              onClick={saveToDatabase}
+              disabled={saveStatus === 'saving' || saveStatus === 'success'}
+              className={`py-4 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 transition-all 
+                ${saveStatus === 'success' ? 'bg-emerald-500' : (saveStatus === 'error' ? 'bg-rose-500' : 'bg-indigo-600 hover:bg-indigo-700')}`}
+            >
+              {saveStatus === 'saving' ? <Activity className="animate-spin" size={18} /> : (saveStatus === 'success' ? <CheckCircle2 size={18} /> : <Landmark size={18} />)} 
+              {saveStatus === 'success' ? '已儲存' : (saveStatus === 'error' ? '儲存失敗' : '儲存結果')}
+            </button>
             <button onClick={exportToCSV} className="py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all"><Download size={18}/> 導出報表 (CSV)</button>
             <button onClick={() => setStep(isMarried ? 'p2_calc' : 'p1_calc')} className="py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-all"><Undo2 size={18}/> 修改數據</button>
             <button onClick={handleReset} className="py-4 bg-slate-200 text-slate-600 rounded-2xl font-black text-sm shadow-sm flex items-center justify-center gap-2 hover:bg-rose-100 hover:text-rose-600 transition-all"><RefreshCcw size={18}/> 重新體檢</button>

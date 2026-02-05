@@ -9,6 +9,7 @@ class Assessment(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
     
     # Searchable fields
+    user_email = Column(String, index=True)
     primary_name = Column(String, index=True)
     secondary_name = Column(String, nullable=True)
     is_married = Column(Boolean, default=False)
