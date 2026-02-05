@@ -10,13 +10,15 @@ from database import engine, get_db
 import logging
 import sys
 
-# Configure logging to show up in Railway logs
+# Configure logging to show up in Railway logs - v2
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    stream=sys.stdout
+    stream=sys.stdout,
+    force=True
 )
 logger = logging.getLogger(__name__)
+logger.info("Starting Handsome OALA API application...")
 
 # Create tables automatically (for simple apps)
 try:
