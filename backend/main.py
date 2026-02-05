@@ -7,9 +7,26 @@ from typing import List, Optional
 import models
 import schemas
 from database import engine, get_db
+import logging
+import sys
+
+# Configure logging to show up in Railway logs
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    stream=sys.stdout
+)
+logger = logging.getLogger(__name__)
 
 # Create tables automatically (for simple apps)
-models.Base.metadata.create_all(bind=engine)
+try:
+    logger.info(f"Attempting to connect to database and create tables...")
+    models.Base.metadata.create_all(bind=engine)
+    logger.info("Database tables created successfully!")
+except Exception as e:
+    logger.error(f"Failed to create database tables: {e}")
+    # We don't raise here so the app can at least start and return 500s instead of crashing
+    # allowing us to see the logs
 
 app = FastAPI(title="Handsome OALA API")
 
