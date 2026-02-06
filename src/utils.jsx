@@ -4,8 +4,13 @@ import React from 'react';
 // In development, this is empty (uses Vite proxy).
 // For production, set VITE_API_URL in your environment variables.
 let apiUrl = import.meta.env.VITE_API_URL || '';
-if (apiUrl && !apiUrl.startsWith('http')) {
-  apiUrl = `https://${apiUrl}`;
+// Force HTTPS for production environments to avoid Mixed Content errors
+if (apiUrl) {
+  if (!apiUrl.startsWith('http')) {
+    apiUrl = `https://${apiUrl}`;
+  } else if (apiUrl.startsWith('http://')) {
+    apiUrl = apiUrl.replace('http://', 'https://');
+  }
 }
 console.log('Debug - VITE_API_URL:', import.meta.env.VITE_API_URL);
 console.log('Debug - Computed API_BASE_URL:', apiUrl);
