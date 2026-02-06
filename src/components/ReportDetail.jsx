@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2 } from 'lucide-react';
-import { getPersonAnalysis, SummaryList, formatCurrency } from '../utils';
+import { getPersonAnalysis, SummaryList, formatCurrency, API_BASE_URL } from '../utils';
 
 const ReportDetail = () => {
   const { id } = useParams();
@@ -12,7 +12,7 @@ const ReportDetail = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`/assessments/${id}`);
+        const res = await fetch(`${API_BASE_URL}/assessments/${id}`);
         if(res.ok) {
             setData(await res.json());
         }

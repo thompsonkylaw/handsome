@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getPersonAnalysis, SummaryList, formatCurrency } from '../utils';
+import { getPersonAnalysis, SummaryList, formatCurrency, API_BASE_URL } from '../utils';
 import { 
   Calculator, Users, User, Landmark, Coins, HeartPulse, 
   CheckCircle2, XCircle, ArrowRight, ArrowLeft, ShieldCheck, 
@@ -227,7 +227,7 @@ const AssessmentForm = () => {
         submission_data: { p1, p2, isMarried }
       };
 
-      const response = await fetch('/assessments/', {
+      const response = await fetch(`${API_BASE_URL}/assessments/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

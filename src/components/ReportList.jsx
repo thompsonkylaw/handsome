@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ArrowLeft, Loader2 } from 'lucide-react';
+import { API_BASE_URL } from '../utils';
 
 const ReportList = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ const ReportList = () => {
     setLoading(true);
     try {
       const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
-      const response = await fetch(`/assessments/${query}`);
+      const response = await fetch(`${API_BASE_URL}/assessments/${query}`);
       if (response.ok) {
         const data = await response.json();
         setAssessments(data);
