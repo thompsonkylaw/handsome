@@ -7,6 +7,8 @@ let apiUrl = import.meta.env.VITE_API_URL || '';
 if (apiUrl && !apiUrl.startsWith('http')) {
   apiUrl = `https://${apiUrl}`;
 }
+console.log('Debug - VITE_API_URL:', import.meta.env.VITE_API_URL);
+console.log('Debug - Computed API_BASE_URL:', apiUrl);
 export const API_BASE_URL = apiUrl;
 
 export const formatCurrency = (num) => {

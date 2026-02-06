@@ -15,6 +15,7 @@ const ReportList = () => {
       const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
       const response = await fetch(`${API_BASE_URL}/assessments/${query}`);
       if (response.ok) {
+        console.log('Debug - Backend connection successful: Reports fetched');
         const data = await response.json();
         setAssessments(data);
       }

@@ -14,6 +14,7 @@ const ReportDetail = () => {
       try {
         const res = await fetch(`${API_BASE_URL}/assessments/${id}`);
         if(res.ok) {
+            console.log('Debug - Backend connection successful: Report detail fetched');
             setData(await res.json());
         }
       } catch(e) { console.error(e); }

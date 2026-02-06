@@ -239,6 +239,8 @@ const AssessmentForm = () => {
         throw new Error(`Saving failed: ${response.status} ${response.statusText} - ${errText}`);
       }
       
+      console.log('Debug - Backend connection successful: Assessment created');
+
       setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 3000);
     } catch (error) {
