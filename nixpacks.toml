@@ -12,7 +12,7 @@
 
 [phases.install]
     dependsOn = ['setup']
-    cmds = ['npm install']
+    cmds = ['npm install', 'pip install -r backend/requirements.txt']
 
 [phases.build]
     dependsOn = ['install']
