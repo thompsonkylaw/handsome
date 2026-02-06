@@ -12,8 +12,10 @@ app.use(express.json());
 
 // Database connection
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL,
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  // connectionString: process.env.DATABASE_URL || process.env.DATABASE_PUBLIC_URL,
+  connectionString: "postgresql://postgres:RevAJPaQCrrzJJBVQpRxgfNRshSpwttt@ballast.proxy.rlwy.net:55662/railway",
+  // ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false,
+  ssl: { rejectUnauthorized: false }, 
   max: 10,
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,

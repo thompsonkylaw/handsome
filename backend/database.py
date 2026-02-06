@@ -11,7 +11,10 @@ logger = logging.getLogger(__name__)
 
 # For local dev, we can use SQLite if no params provided, or Postgres if DATABASE_URL is set
 # Railway provides DATABASE_URL or DATABASE_PUBLIC_URL
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("DATABASE_PUBLIC_URL") or "sqlite:///./sql_app.db"
+# SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("DATABASE_PUBLIC_URL") or "sqlite:///./sql_app.db"
+
+# Using remote database as requested
+SQLALCHEMY_DATABASE_URL = "postgresql://postgres:RevAJPaQCrrzJJBVQpRxgfNRshSpwttt@ballast.proxy.rlwy.net:55662/railway"
 
 # Fix for Railway's postgres:// vs postgresql://
 if SQLALCHEMY_DATABASE_URL and SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
