@@ -4,12 +4,12 @@ set -e
 # Start Python backend in background
 echo "Starting Python backend on port 8000..."
 cd backend
-hypercorn main:app --bind 0.0.0.0:8000 &
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!
 cd ..
 
 # Give backend a moment to start
-sleep 2
+sleep 5
 
 # Check if backend is running
 if ! kill -0 $BACKEND_PID 2>/dev/null; then
