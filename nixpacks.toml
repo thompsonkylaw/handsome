@@ -31,4 +31,4 @@
 
 # start the caddy web server & python backend
 [start]
-    cmd = '(cd backend && hypercorn main:app --bind 0.0.0.0:8000 2>&1 | sed "s/^/[PYTHON] /" &) && exec caddy run --config Caddyfile --adapter caddyfile 2>&1 | sed "s/^/[CADDY] /"'
+    cmd = 'bash start.sh'
