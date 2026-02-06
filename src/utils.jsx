@@ -3,7 +3,11 @@ import React from 'react';
 // API Configuration
 // In development, this is empty (uses Vite proxy).
 // For production, set VITE_API_URL in your environment variables.
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+let apiUrl = import.meta.env.VITE_API_URL || '';
+if (apiUrl && !apiUrl.startsWith('http')) {
+  apiUrl = `https://${apiUrl}`;
+}
+export const API_BASE_URL = apiUrl;
 
 export const formatCurrency = (num) => {
   return new Intl.NumberFormat('zh-HK', { 
