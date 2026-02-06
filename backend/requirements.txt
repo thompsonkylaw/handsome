@@ -22,3 +22,6 @@ wsproto==1.2.0
 uvicorn==0.37.0
 hypercorn==0.14.4
 camelot-py[cv]
+sqlalchemy>=2.0.25
+psycopg2-binary>=2.9.9
+python-dotenv>=1.0.1
