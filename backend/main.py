@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -42,6 +42,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Incoming request: {request.method} {request.url}")
+    response = await call_next(request)
+    return response
+
 @app.get("/")
 def read_root():
     return {"message": "Handsome OALA API is running"}
@@ -49,6 +55,7 @@ def read_root():
 @app.post("/assessments/", response_model=schemas.AssessmentResponse)
 def create_assessment(assessment: schemas.AssessmentCreate, db: Session = Depends(get_db)):
     try:
+        
         logger.info(f"Creating assessment for user_email: {assessment.user_email}")
         
         # Try to get phone from submission_data if not provided
