@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPersonAnalysis, SummaryList, formatCurrency, API_BASE_URL } from '../utils';
 import { 
@@ -8,6 +8,7 @@ import {
   Home, Building2, ListChecks, Download, RefreshCcw, PieChart, Activity, Info,
   PiggyBank, Wallet, Construction, Settings, X
 } from 'lucide-react';
+import NumberPad from './NumberPad';
 
 const COMPANIES = [
   { color: '#009739', company: 'Manulife' },
@@ -106,7 +107,7 @@ const GaugeChart = ({ value, limit, label }) => {
   );
 };
 
-const ToggleInput = ({ label, enabled, value, onToggle, onValueChange, color="blue", subtext="" }) => (
+const ToggleInput = ({ label, enabled, value, onToggle, onValueChange, color="blue", subtext="", openNumpad, numpadAnchorRef }) => (
   <div className={`p-5 rounded-2xl border-2 transition-all ${enabled ? (color==='blue' ? 'border-blue-400 bg-blue-50/50 shadow-inner' : 'border-amber-400 bg-amber-50/50 shadow-inner') : 'border-slate-100 bg-white'}`}>
     <div className="flex justify-between items-center mb-2">
       <div className="flex flex-col">
@@ -119,10 +120,12 @@ const ToggleInput = ({ label, enabled, value, onToggle, onValueChange, color="bl
       <div className="relative mt-2 animate-in fade-in zoom-in-95 duration-200">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">$</span>
         <input 
-          type="number" 
+          type="text" 
+          inputMode="none"
+          readOnly
           value={value === 0 ? '' : value} 
-          onChange={(e) => onValueChange(e.target.value)} 
-          className="w-full pl-8 pr-4 py-2 text-xl font-bold rounded-xl border-2 border-transparent focus:border-blue-300 outline-none bg-white shadow-sm" 
+          onClick={(e) => { if (openNumpad) { if (numpadAnchorRef) numpadAnchorRef.current = e.target; openNumpad(value, onValueChange); } }}
+          className="w-full pl-8 pr-4 py-2 text-xl font-bold rounded-xl border-2 border-transparent focus:border-blue-300 outline-none bg-white shadow-sm cursor-pointer" 
           placeholder="0" 
         />
       </div>
@@ -130,16 +133,19 @@ const ToggleInput = ({ label, enabled, value, onToggle, onValueChange, color="bl
   </div>
 );
 
-const InputField = ({ label, icon, value, onChange, type="text", placeholder, error }) => (
+const InputField = ({ label, icon, value, onChange, type="text", placeholder, error, openNumpad, numpadAnchorRef }) => (
   <div className="space-y-1 w-full">
     <label className={`text-sm font-bold flex items-center gap-2 transition-colors ${error ? 'text-rose-600' : 'text-slate-600'}`}>
       {icon} {label}
     </label>
     <input 
-      type={type} 
+      type={type === 'number' && openNumpad ? 'text' : type} 
+      inputMode={type === 'number' && openNumpad ? 'none' : undefined}
+      readOnly={type === 'number' && !!openNumpad}
       value={value} 
       onChange={(e) => onChange(e.target.value)} 
-      className={`w-full p-4 text-lg font-bold border-2 rounded-2xl bg-white outline-none shadow-sm transition-all ${error ? 'border-rose-500 bg-rose-50 focus:border-rose-600' : 'border-slate-100 focus:border-blue-400'}`} 
+      onClick={type === 'number' && openNumpad ? (e) => { if (numpadAnchorRef) numpadAnchorRef.current = e.target; openNumpad(value, onChange, { allowDecimal: false }); } : undefined}
+      className={`w-full p-4 text-lg font-bold border-2 rounded-2xl bg-white outline-none shadow-sm transition-all ${type === 'number' && openNumpad ? 'cursor-pointer ' : ''}${error ? 'border-rose-500 bg-rose-50 focus:border-rose-600' : 'border-slate-100 focus:border-blue-400'}`} 
       placeholder={placeholder} 
     />
     {error && <p className="text-rose-500 text-[10px] font-bold mt-1 ml-1 animate-pulse">{error}</p>}
@@ -158,6 +164,61 @@ const AssessmentForm = () => {
   const [p2, setP2] = useState(createEmptyPerson());
   const [showExportMsg, setShowExportMsg] = useState(false);
   const [saveStatus, setSaveStatus] = useState('idle'); // idle | saving | success | error
+
+  // NumberPad popup state
+  const [numpad, setNumpad] = useState({ show: false, value: '', allowDecimal: true });
+  const numpadCallbackRef = useRef(null);
+  const numpadAnchorRef = useRef(null);
+
+  const openNumpad = (currentValue, callback, options = {}) => {
+    const { allowDecimal = true } = options;
+    numpadCallbackRef.current = callback;
+    setNumpad({ show: true, value: currentValue ? String(currentValue) : '', allowDecimal });
+  };
+
+  const handleNumpadInput = (key) => setNumpad(prev => {
+    if (key === '.' && prev.value.includes('.')) return prev;
+    return { ...prev, value: prev.value + key };
+  });
+  const handleNumpadDelete = () => setNumpad(prev => ({ ...prev, value: prev.value.slice(0, -1) }));
+  const handleNumpadClear = () => setNumpad(prev => ({ ...prev, value: '' }));
+  const handleNumpadConfirm = () => {
+    numpadCallbackRef.current = null;
+    numpadAnchorRef.current = null;
+    setNumpad({ show: false, value: '', allowDecimal: true });
+  };
+
+  // Real-time sync: update the field as the user types on the numpad
+  useEffect(() => {
+    if (numpad.show && numpadCallbackRef.current) {
+      numpadCallbackRef.current(numpad.value);
+    }
+  }, [numpad.value, numpad.show]);
+
+  const NumpadPopup = () => {
+    if (!numpad.show) return null;
+    return (
+      <div className="fixed inset-0 z-[100]" onClick={handleNumpadConfirm}>
+        <div 
+          className="absolute z-[101] flex justify-center"
+          style={(() => {
+            if (!numpadAnchorRef.current) return { top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+            const rect = numpadAnchorRef.current.getBoundingClientRect();
+            return { top: rect.bottom + 8, left: rect.left + rect.width / 2, transform: 'translateX(-50%)' };
+          })()}
+          onClick={e => e.stopPropagation()}
+        >
+          <NumberPad
+            onInput={handleNumpadInput}
+            onDelete={handleNumpadDelete}
+            onClear={handleNumpadClear}
+            onConfirm={handleNumpadConfirm}
+            allowDecimal={numpad.allowDecimal}
+          />
+        </div>
+      </div>
+    );
+  };
 
   const getUserEmail = () => window.root13appSettings?.user_email || "none@gmail.com";
 
@@ -262,6 +323,7 @@ const AssessmentForm = () => {
             .theme-light-bg { background-color: ${themeColor}20; }
             .group:hover .group-hover-theme-bg { background-color: ${themeColor}; }
             .group:hover .group-hover-theme-text { color: ${themeColor}; }
+            .group:hover .group-hover-text-white { color: white; }
         `}</style>
 
          <button 
@@ -312,7 +374,7 @@ const AssessmentForm = () => {
              <button onClick={() => setStep('intro')} className="p-8 bg-white rounded-[2rem] shadow-xl border-4 border-slate-50 theme-hover-border hover:shadow-2xl hover:scale-[1.02] transition-all group text-left relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-3 theme-bg text-white font-black text-xs rounded-bl-2xl">熱門</div>
                 <div className="flex items-center gap-6 relative z-10">
-                   <div className="theme-light-bg p-5 rounded-2xl theme-text group-hover-theme-bg group-hover:text-white transition-colors duration-300">
+                   <div className="theme-light-bg p-5 rounded-2xl theme-text group-hover-theme-bg group-hover-text-white transition-colors duration-300">
                       <Calculator size={40} />
                    </div>
                    <div>
@@ -416,7 +478,7 @@ const AssessmentForm = () => {
                 <h3 className="font-black text-slate-800 flex items-center gap-2"><UserCircle className="theme-text" /> {isMarried ? "第一位申請人" : "您的個人資料"}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <InputField label="姓名" icon={<User size={14} />} value={p1.name} onChange={v => setP1({...p1, name: v})} placeholder="陳大文" />
-                  <InputField label="年齡" icon={<Calendar size={14} />} type="number" value={p1.age} onChange={v => setP1({...p1, age: v})} placeholder="65" />
+                  <InputField label="年齡" icon={<Calendar size={14} />} type="number" value={p1.age} onChange={v => setP1({...p1, age: v})} placeholder="65" openNumpad={openNumpad} numpadAnchorRef={numpadAnchorRef} />
                 </div>
                 <InputField label="聯絡電話" icon={<Phone size={14} />} value={p1.phone} onChange={v => setP1({...p1, phone: v})} placeholder="輸入8位數字" error={p1PhoneError} />
               </div>
@@ -426,7 +488,7 @@ const AssessmentForm = () => {
                   <h3 className="font-black text-indigo-800 flex items-center gap-2"><Users className="text-indigo-600" /> 第二位申請人 (配偶)</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <InputField label="姓名" icon={<User size={14} />} value={p2.name} onChange={v => setP2({...p2, name: v})} placeholder="王小梅" />
-                    <InputField label="年齡" icon={<Calendar size={14} />} type="number" value={p2.age} onChange={v => setP2({...p2, age: v})} placeholder="65" />
+                    <InputField label="年齡" icon={<Calendar size={14} />} type="number" value={p2.age} onChange={v => setP2({...p2, age: v})} placeholder="65" openNumpad={openNumpad} numpadAnchorRef={numpadAnchorRef} />
                   </div>
                   <InputField label="聯絡電話" icon={<Phone size={14} />} value={p2.phone} onChange={v => setP2({...p2, phone: v})} placeholder="輸入8位數字" error={p2PhoneError} />
                 </div>
@@ -442,6 +504,7 @@ const AssessmentForm = () => {
             </button>
           </div>
         </div>
+        <NumpadPopup />
       </div>
     );
   }
@@ -481,11 +544,14 @@ const AssessmentForm = () => {
                       <div className="flex items-center gap-3">
                         <div className="relative flex-1">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-300">$</span>
-                          <input type="number" value={prop.value || ''} onChange={e => {
-                            const newProps = [...person.properties];
-                            newProps[idx] = { ...newProps[idx], value: e.target.value === '' ? 0 : parseFloat(e.target.value) };
-                            setPerson({...person, properties: newProps});
-                          }} className="w-full pl-10 pr-4 py-3 text-lg font-black rounded-xl border-2 border-white focus:border-blue-400 outline-none shadow-sm" placeholder="物業估值" />
+                          <input type="text" inputMode="none" readOnly value={prop.value || ''} onClick={(e) => {
+                            numpadAnchorRef.current = e.target;
+                            openNumpad(prop.value, (v) => {
+                              const newProps = [...person.properties];
+                              newProps[idx] = { ...newProps[idx], value: v === '' ? 0 : parseFloat(v) };
+                              setPerson({...person, properties: newProps});
+                            });
+                          }} className="w-full pl-10 pr-4 py-3 text-lg font-black rounded-xl border-2 border-white focus:border-blue-400 outline-none shadow-sm cursor-pointer" placeholder="物業估值" />
                         </div>
                         <button onClick={() => setPerson({...person, properties: person.properties.filter(p => p.id !== prop.id)})} className="text-rose-400 p-2 hover:bg-rose-50 rounded-full transition-all"><Trash2 size={20}/></button>
                       </div>
@@ -518,11 +584,14 @@ const AssessmentForm = () => {
                       <div className="flex flex-col sm:flex-row gap-3 items-center">
                         <div className="relative flex-1 w-full">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-300">$</span>
-                          <input type="number" value={item.value || ''} onChange={e => {
-                            const newMpf = [...person.mpfItems];
-                            newMpf[idx] = { ...newMpf[idx], value: e.target.value === '' ? 0 : parseFloat(e.target.value) };
-                            setPerson({...person, mpfItems: newMpf});
-                          }} className="w-full pl-10 pr-4 py-3 text-lg font-black rounded-xl border-2 border-white focus:border-indigo-400 outline-none shadow-sm" placeholder="戶口價值" />
+                          <input type="text" inputMode="none" readOnly value={item.value || ''} onClick={(e) => {
+                            numpadAnchorRef.current = e.target;
+                            openNumpad(item.value, (v) => {
+                              const newMpf = [...person.mpfItems];
+                              newMpf[idx] = { ...newMpf[idx], value: v === '' ? 0 : parseFloat(v) };
+                              setPerson({...person, mpfItems: newMpf});
+                            });
+                          }} className="w-full pl-10 pr-4 py-3 text-lg font-black rounded-xl border-2 border-white focus:border-indigo-400 outline-none shadow-sm cursor-pointer" placeholder="戶口價值" />
                         </div>
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                           {item.type === '公積金' && (
@@ -563,11 +632,13 @@ const AssessmentForm = () => {
                     na[key] = { ...na[key], value: v === '' ? 0 : parseFloat(v) };
                     setPerson({...person, assets: na});
                   }}
+                  openNumpad={openNumpad}
+                  numpadAnchorRef={numpadAnchorRef}
                 />
               ))}
             </div>
 
-            {/* Income Section */}
+            {/* Income Section */}}
             <section className="bg-slate-50 p-6 rounded-[2rem] border border-slate-200">
               <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2"><Coins className="text-amber-600" /> 每月穩定收入</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -584,6 +655,8 @@ const AssessmentForm = () => {
                       setPerson({...person, income: ni});
                     }}
                     subtext={key.includes('Reverse') ? "註：逆按揭屬法定豁免項目" : ""}
+                    openNumpad={openNumpad}
+                    numpadAnchorRef={numpadAnchorRef}
                   />
                 ))}
               </div>
@@ -597,6 +670,7 @@ const AssessmentForm = () => {
             </button>
           </div>
         </div>
+        <NumpadPopup />
       </div>
     );
   };

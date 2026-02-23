@@ -14,6 +14,17 @@ class AssessmentCreate(BaseModel):
     is_eligible: bool
     submission_data: Dict[str, Any]
 
+# Schema for updating a record (all fields optional)
+class AssessmentUpdate(BaseModel):
+    primary_name: Optional[str] = None
+    user_phone: Optional[str] = None
+    secondary_name: Optional[str] = None
+    is_married: Optional[bool] = None
+    total_asset_value: Optional[float] = None
+    total_income_value: Optional[float] = None
+    is_eligible: Optional[bool] = None
+    submission_data: Optional[Dict[str, Any]] = None
+
 # Schema for reading a record (includes ID and timestamp)
 class AssessmentResponse(AssessmentCreate):
     id: int

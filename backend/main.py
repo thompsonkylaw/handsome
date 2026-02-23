@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 from sqlalchemy import or_
 from typing import List, Optional
 
@@ -118,6 +119,27 @@ def read_assessment(assessment_id: int, db: Session = Depends(get_db)):
     if assessment is None:
         raise HTTPException(status_code=404, detail="Assessment not found")
     return assessment
+
+@app.put("/assessments/{assessment_id}", response_model=schemas.AssessmentResponse)
+def update_assessment(assessment_id: int, payload: schemas.AssessmentUpdate, db: Session = Depends(get_db)):
+    assessment = db.query(models.Assessment).filter(models.Assessment.id == assessment_id).first()
+    if assessment is None:
+        raise HTTPException(status_code=404, detail="Assessment not found")
+    try:
+        update_data = payload.model_dump(exclude_unset=True)
+        for key, value in update_data.items():
+            setattr(assessment, key, value)
+        # SQLAlchemy won't detect JSON column changes without this
+        if 'submission_data' in update_data:
+            flag_modified(assessment, 'submission_data')
+        db.commit()
+        db.refresh(assessment)
+        logger.info(f"Updated assessment id={assessment_id}")
+        return assessment
+    except Exception as e:
+        logger.error(f"Failed to update assessment: {str(e)}", exc_info=True)
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
 # ─── OnePageInsurance endpoints ───────────────────────────────────────────────
