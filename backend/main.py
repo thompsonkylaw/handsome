@@ -118,3 +118,82 @@ def read_assessment(assessment_id: int, db: Session = Depends(get_db)):
     if assessment is None:
         raise HTTPException(status_code=404, detail="Assessment not found")
     return assessment
+
+
+# ─── OnePageInsurance endpoints ───────────────────────────────────────────────
+
+@app.post("/one-page-insurance/", response_model=schemas.OnePageInsuranceResponse)
+def save_one_page_insurance(data: schemas.OnePageInsuranceCreate, db: Session = Depends(get_db)):
+    """Upsert: if user_email + client_name already exists, update it; otherwise create new."""
+    try:
+        logger.info(f"Saving onePageInsurance for user_email={data.user_email}, client={data.client_name}")
+        existing = db.query(models.OnePageInsurance).filter(
+            models.OnePageInsurance.user_email == data.user_email,
+            models.OnePageInsurance.client_name == data.client_name,
+        ).first()
+
+        if existing:
+            existing.client_phone = data.client_phone
+            existing.client_whatsapp = data.client_whatsapp
+            existing.client_email = data.client_email
+            existing.client_type = data.client_type
+            existing.plans_data = data.plans_data
+            import datetime
+            existing.updated_at = datetime.datetime.utcnow()
+            db.commit()
+            db.refresh(existing)
+            logger.info(f"Updated onePageInsurance id={existing.id}")
+            return existing
+        else:
+            record = models.OnePageInsurance(
+                user_email=data.user_email,
+                client_name=data.client_name,
+                client_phone=data.client_phone,
+                client_whatsapp=data.client_whatsapp,
+                client_email=data.client_email,
+                client_type=data.client_type,
+                plans_data=data.plans_data,
+            )
+            db.add(record)
+            db.commit()
+            db.refresh(record)
+            logger.info(f"Created onePageInsurance id={record.id}")
+            return record
+    except Exception as e:
+        logger.error(f"Failed to save onePageInsurance: {str(e)}", exc_info=True)
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
+@app.get("/one-page-insurance/", response_model=List[schemas.OnePageInsuranceResponse])
+def list_one_page_insurance(
+    user_email: Optional[str] = None,
+    search: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+):
+    query = db.query(models.OnePageInsurance)
+    if user_email:
+        query = query.filter(models.OnePageInsurance.user_email == user_email)
+    if search:
+        query = query.filter(models.OnePageInsurance.client_name.ilike(f"%{search}%"))
+    return query.order_by(models.OnePageInsurance.updated_at.desc()).offset(skip).limit(limit).all()
+
+
+@app.get("/one-page-insurance/{record_id}", response_model=schemas.OnePageInsuranceResponse)
+def get_one_page_insurance(record_id: int, db: Session = Depends(get_db)):
+    record = db.query(models.OnePageInsurance).filter(models.OnePageInsurance.id == record_id).first()
+    if record is None:
+        raise HTTPException(status_code=404, detail="Record not found")
+    return record
+
+
+@app.delete("/one-page-insurance/{record_id}")
+def delete_one_page_insurance(record_id: int, db: Session = Depends(get_db)):
+    record = db.query(models.OnePageInsurance).filter(models.OnePageInsurance.id == record_id).first()
+    if record is None:
+        raise HTTPException(status_code=404, detail="Record not found")
+    db.delete(record)
+    db.commit()
+    return {"message": "Deleted successfully"}
