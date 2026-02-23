@@ -142,6 +142,59 @@ def update_assessment(assessment_id: int, payload: schemas.AssessmentUpdate, db:
         raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
 
 
+# ─── UserSettings endpoints ───────────────────────────────────────────────────
+
+@app.get("/user-settings/", response_model=schemas.UserSettingsResponse)
+def get_user_settings(user_email: str, db: Session = Depends(get_db)):
+    """Get settings (advisor info, enabled companies) for a user."""
+    record = db.query(models.UserSettings).filter(
+        models.UserSettings.user_email == user_email
+    ).first()
+    if record is None:
+        raise HTTPException(status_code=404, detail="Settings not found")
+    return record
+
+
+@app.put("/user-settings/", response_model=schemas.UserSettingsResponse)
+def save_user_settings(user_email: str, data: schemas.UserSettingsUpdate, db: Session = Depends(get_db)):
+    """Upsert user settings. Only provided fields are updated."""
+    try:
+        logger.info(f"Saving user settings for user_email={user_email}")
+        record = db.query(models.UserSettings).filter(
+            models.UserSettings.user_email == user_email
+        ).first()
+
+        if record:
+            update_data = data.model_dump(exclude_unset=True)
+            for key, value in update_data.items():
+                setattr(record, key, value)
+            if 'advisor_info' in update_data:
+                flag_modified(record, 'advisor_info')
+            if 'enabled_company_codes' in update_data:
+                flag_modified(record, 'enabled_company_codes')
+            import datetime
+            record.updated_at = datetime.datetime.utcnow()
+            db.commit()
+            db.refresh(record)
+            logger.info(f"Updated user settings id={record.id}")
+            return record
+        else:
+            record = models.UserSettings(
+                user_email=user_email,
+                advisor_info=data.advisor_info,
+                enabled_company_codes=data.enabled_company_codes,
+            )
+            db.add(record)
+            db.commit()
+            db.refresh(record)
+            logger.info(f"Created user settings id={record.id}")
+            return record
+    except Exception as e:
+        logger.error(f"Failed to save user settings: {str(e)}", exc_info=True)
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Database error: {str(e)}")
+
+
 # ─── OnePageInsurance endpoints ───────────────────────────────────────────────
 
 @app.post("/one-page-insurance/", response_model=schemas.OnePageInsuranceResponse)

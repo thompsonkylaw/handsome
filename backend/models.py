@@ -25,6 +25,22 @@ class Assessment(Base):
     submission_data = Column(JSON) 
 
 
+class UserSettings(Base):
+    __tablename__ = "user_settings"
+
+    id = Column(Integer, primary_key=True, index=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+    user_email = Column(String, unique=True, index=True)
+
+    # Advisor info as JSON: {name, phone, whatsapp, email}
+    advisor_info = Column(JSON, nullable=True)
+
+    # Enabled company codes as JSON array: ["AIA", "PRU", ...]
+    enabled_company_codes = Column(JSON, nullable=True)
+
+
 class OnePageInsurance(Base):
     __tablename__ = "one_page_insurance"
 

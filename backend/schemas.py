@@ -34,6 +34,23 @@ class AssessmentResponse(AssessmentCreate):
         from_attributes = True
 
 
+# --- UserSettings schemas ---
+class UserSettingsUpdate(BaseModel):
+    advisor_info: Optional[Dict[str, Any]] = None
+    enabled_company_codes: Optional[List[str]] = None
+
+class UserSettingsResponse(BaseModel):
+    id: int
+    user_email: str
+    advisor_info: Optional[Dict[str, Any]] = None
+    enabled_company_codes: Optional[List[str]] = None
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 # --- OnePageInsurance schemas ---
 class OnePageInsuranceCreate(BaseModel):
     user_email: str
