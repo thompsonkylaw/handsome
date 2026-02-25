@@ -57,6 +57,17 @@ const createEmptyPerson = () => ({
   }
 });
 
+// Helper for formatting numeric inputs with commas while typing
+const formatInputDisplay = (val) => {
+  if (val === null || val === undefined || val === '') return '';
+  // Convert to string to handle potential number input
+  const str = String(val);
+  const parts = str.split('.');
+  // Format integer part with commas
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
+
 // --- UI Components ---
 
 const ToggleButton = ({ active, onClick, color = "bg-blue-600" }) => (
@@ -124,7 +135,7 @@ const ToggleInput = ({ label, enabled, value, onToggle, onValueChange, color="bl
           type="text" 
           inputMode="none"
           readOnly
-          value={value === 0 ? '' : value} 
+          value={value === 0 ? '' : formatInputDisplay(value)} 
           onClick={(e) => { if (openNumpad) { if (numpadAnchorRef) numpadAnchorRef.current = e.target; openNumpad(value, onValueChange); } }}
           className="w-full pl-8 pr-4 py-2 text-xl font-bold rounded-xl border-2 border-transparent focus:border-blue-300 outline-none bg-white shadow-sm cursor-pointer" 
           placeholder="0" 
@@ -143,8 +154,17 @@ const InputField = ({ label, icon, value, onChange, type="text", placeholder, er
       type={type === 'number' && openNumpad ? 'text' : type} 
       inputMode={type === 'number' && openNumpad ? 'none' : undefined}
       readOnly={type === 'number' && !!openNumpad}
-      value={value} 
-      onChange={(e) => onChange(e.target.value)} 
+      value={type === 'number' || openNumpad ? formatInputDisplay(value) : value} 
+      onChange={(e) => {
+        const val = e.target.value;
+        // If it's a number field (or treated as such), strip commas for the update
+        if (type === 'number' || openNumpad) {
+           const clean = val.replace(/,/g, '');
+           if (!isNaN(parseFloat(clean)) || clean === '' || clean === '.') onChange(clean);
+        } else {
+           onChange(val);
+        }
+      }} 
       onClick={type === 'number' && openNumpad ? (e) => { if (numpadAnchorRef) numpadAnchorRef.current = e.target; openNumpad(value, onChange, { allowDecimal: false }); } : undefined}
       className={`w-full p-4 text-lg font-bold border-2 rounded-2xl bg-white outline-none shadow-sm transition-all ${type === 'number' && openNumpad ? 'cursor-pointer ' : ''}${error ? 'border-rose-500 bg-rose-50 focus:border-rose-600' : 'border-slate-100 focus:border-blue-400'}`} 
       placeholder={placeholder} 
@@ -192,7 +212,27 @@ const AssessmentForm = () => {
   // Real-time sync: update the field as the user types on the numpad
   useEffect(() => {
     if (numpad.show && numpadCallbackRef.current) {
-      numpadCallbackRef.current(numpad.value);
+      // Clean commas if present
+      const cleanValue = numpad.value.toString().replace(/,/g, '');
+      
+      // Check if it's a valid number format (allow trailing dot or empty)
+      // If it ends with '.', keep it as string to preserve the dot for display
+      // Otherwise convert to number if possible
+      const isNumber = !isNaN(parseFloat(cleanValue)) && isFinite(cleanValue);
+      const endsWithDot = cleanValue.endsWith('.');
+      const startsWithDot = cleanValue.startsWith('.');
+      const isEmpty = cleanValue === '';
+      
+      if (isEmpty) {
+        numpadCallbackRef.current(0);
+      } else if (endsWithDot || startsWithDot || (isNumber && cleanValue.includes('.') && cleanValue.split('.')[1].length === 0)) {
+        // Keep as string to preserve decimal typing state
+        numpadCallbackRef.current(cleanValue);
+      } else if (isNumber) {
+        numpadCallbackRef.current(parseFloat(cleanValue));
+      } else {
+        numpadCallbackRef.current(cleanValue);
+      }
     }
   }, [numpad.value, numpad.show]);
 
@@ -236,10 +276,10 @@ const AssessmentForm = () => {
   const isIncomeOk = totalIncome <= currentLimit.income;
   const isEligible = isAssetOk && isIncomeOk;
 
-  const validatePhone = (phone) => /^\d{8}$/.test(phone);
+  const validatePhone = (phone) => /^\d+$/.test(phone);
   const getPhoneError = (phone) => {
     if (!phone) return null;
-    if (!/^\d{8}$/.test(phone)) return "手機號碼需為8位數字";
+    if (!/^\d+$/.test(phone)) return "手機號碼需為數字";
     return null;
   };
 
@@ -483,7 +523,7 @@ const AssessmentForm = () => {
                   <InputField label="姓名" icon={<User size={14} />} value={p1.name} onChange={v => setP1({...p1, name: v})} placeholder="陳大文" />
                   <InputField label="年齡" icon={<Calendar size={14} />} type="number" value={p1.age} onChange={v => setP1({...p1, age: v})} placeholder="65" openNumpad={openNumpad} numpadAnchorRef={numpadAnchorRef} />
                 </div>
-                <InputField label="聯絡電話" icon={<Phone size={14} />} value={p1.phone} onChange={v => setP1({...p1, phone: v})} placeholder="輸入8位數字" error={p1PhoneError} />
+                <InputField label="聯絡電話" icon={<Phone size={14} />} value={p1.phone} onChange={v => setP1({...p1, phone: v})} placeholder="輸入電話號碼" error={p1PhoneError} />
               </div>
 
               {isMarried && (
@@ -493,7 +533,7 @@ const AssessmentForm = () => {
                     <InputField label="姓名" icon={<User size={14} />} value={p2.name} onChange={v => setP2({...p2, name: v})} placeholder="王小梅" />
                     <InputField label="年齡" icon={<Calendar size={14} />} type="number" value={p2.age} onChange={v => setP2({...p2, age: v})} placeholder="65" openNumpad={openNumpad} numpadAnchorRef={numpadAnchorRef} />
                   </div>
-                  <InputField label="聯絡電話" icon={<Phone size={14} />} value={p2.phone} onChange={v => setP2({...p2, phone: v})} placeholder="輸入8位數字" error={p2PhoneError} />
+                  <InputField label="聯絡電話" icon={<Phone size={14} />} value={p2.phone} onChange={v => setP2({...p2, phone: v})} placeholder="輸入電話號碼" error={p2PhoneError} />
                 </div>
               )}
             </div>

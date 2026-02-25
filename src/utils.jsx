@@ -1,11 +1,12 @@
 import React from 'react';
+import { serverURL } from './config';
 
 // API Configuration
 // In development, this is empty (uses Vite proxy).
 // For production, set VITE_API_URL in your environment variables.
-let apiUrl = import.meta.env.VITE_API_URL || '';
+let apiUrl = serverURL;
 // Force HTTPS for production environments to avoid Mixed Content errors
-if (apiUrl) {
+if (apiUrl && !apiUrl.includes('localhost') && !apiUrl.includes('127.0.0.1')) {
   if (!apiUrl.startsWith('http')) {
     apiUrl = `https://${apiUrl}`;
   } else if (apiUrl.startsWith('http://')) {

@@ -20,6 +20,15 @@ const recalc = (sd) => {
   return { totalAsset, totalIncome, isEligible: totalAsset <= lim.asset && totalIncome <= lim.income };
 };
 
+// Helper for formatting numeric inputs with commas while typing
+const formatInputDisplay = (val) => {
+  if (val === null || val === undefined || val === '') return '';
+  const str = String(val);
+  const parts = str.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
+
 /* ── Expandable section wrapper ─────────────────────── */
 const Section = ({ title, badge, children, defaultOpen = false }) => {
   const [open, setOpen] = useState(defaultOpen);
@@ -48,11 +57,23 @@ const Field = ({ label, value, onChange, type = 'text', suffix, openNumpad, nump
     <label className="text-sm font-bold text-slate-500 whitespace-nowrap">{label}</label>
     <div className="flex items-center gap-1">
       <input
-        type={type === 'number' && openNumpad ? 'text' : type}
+        type={type === 'number' || openNumpad ? 'text' : type}
         inputMode={type === 'number' && openNumpad ? 'none' : undefined}
         readOnly={type === 'number' && !!openNumpad}
-        value={value ?? ''}
-        onChange={e => onChange(type === 'number' ? (parseFloat(e.target.value) || 0) : e.target.value)}
+        value={type === 'number' ? formatInputDisplay(value) : (value ?? '')}
+        onChange={(e) => {
+          const val = e.target.value;
+          if (type === 'number') {
+            const clean = val.replace(/,/g, '');
+            if (clean === '' || clean === '.') onChange(clean);
+            else {
+               const num = parseFloat(clean);
+               onChange(isNaN(num) ? clean : num);
+            }
+          } else {
+            onChange(val);
+          }
+        }}
         onClick={type === 'number' && openNumpad ? (e) => { if (numpadAnchorRef) numpadAnchorRef.current = e.target; openNumpad(value, onChange, { allowDecimal: type === 'number' }); } : undefined}
         className={`w-48 px-3 py-1.5 border border-slate-200 rounded-xl text-sm text-right focus:border-indigo-400 outline-none transition-colors ${type === 'number' && openNumpad ? 'cursor-pointer' : ''}`}
       />
@@ -127,11 +148,19 @@ const ListEditor = ({ items, onChange, typeOptions, fields, openNumpad, numpadAn
             </select>
           )}
           <input
-            type={openNumpad ? 'text' : 'number'}
+            type="text"
             inputMode={openNumpad ? 'none' : undefined}
             readOnly={!!openNumpad}
-            value={item.value}
-            onChange={e => update(idx, { value: parseFloat(e.target.value) || 0 })}
+            value={formatInputDisplay(item.value)}
+            onChange={e => {
+                const val = e.target.value;
+                const clean = val.replace(/,/g, '');
+                if (clean === '' || clean === '.') update(idx, { value: clean });
+                else {
+                    const num = parseFloat(clean);
+                    update(idx, { value: isNaN(num) ? clean : num });
+                }
+            }}
             onClick={openNumpad ? (e) => { if (numpadAnchorRef) numpadAnchorRef.current = e.target; openNumpad(item.value, (v) => update(idx, { value: parseFloat(v) || 0 })); } : undefined}
             className={`w-32 px-2 py-1 border border-slate-200 rounded-lg text-sm text-right ${openNumpad ? 'cursor-pointer' : ''}`}
           />
