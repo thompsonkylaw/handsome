@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getPersonAnalysis, SummaryList, formatCurrency, API_BASE_URL } from '../utils';
+import { appConfig } from '../config';
 import { 
   Calculator, Users, User, Landmark, Coins, HeartPulse, 
   CheckCircle2, XCircle, ArrowRight, ArrowLeft, ShieldCheck, 
@@ -385,18 +386,20 @@ const AssessmentForm = () => {
                 </div>
              </button>
 
-             <button onClick={() => setStep('general_checkup')} className="p-8 bg-white rounded-[2rem] shadow-xl border-4 border-slate-50 hover:border-emerald-500 hover:shadow-2xl hover:scale-[1.02] transition-all group text-left opacity-80 hover:opacity-100">
-                <div className="flex items-center gap-6">
-                   <div className="bg-emerald-100 p-5 rounded-2xl text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
-                      <Activity size={40} />
-                   </div>
-                   <div>
-                      <h3 className="text-2xl font-black text-slate-800 group-hover:text-emerald-600 transition-colors">一般體檢</h3>
-                      <p className="text-slate-500 font-bold mt-2 text-sm">身體檢查 • 健康報告</p>
-                   </div>
-                   <ArrowRight className="ml-auto text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-2 transition-all" size={32} />
-                </div>
-             </button>
+             {appConfig.showGeneralCheckup && (
+               <button onClick={() => setStep('general_checkup')} className="p-8 bg-white rounded-[2rem] shadow-xl border-4 border-slate-50 hover:border-emerald-500 hover:shadow-2xl hover:scale-[1.02] transition-all group text-left opacity-80 hover:opacity-100">
+                  <div className="flex items-center gap-6">
+                     <div className="bg-emerald-100 p-5 rounded-2xl text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
+                        <Activity size={40} />
+                     </div>
+                     <div>
+                        <h3 className="text-2xl font-black text-slate-800 group-hover:text-emerald-600 transition-colors">一般體檢</h3>
+                        <p className="text-slate-500 font-bold mt-2 text-sm">身體檢查 • 健康報告</p>
+                     </div>
+                     <ArrowRight className="ml-auto text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-2 transition-all" size={32} />
+                  </div>
+               </button>
+             )}
 
              <button onClick={() => navigate('/reports')} className="p-8 bg-white rounded-[2rem] shadow-xl border-4 border-slate-50 hover:border-blue-500 hover:shadow-2xl hover:scale-[1.02] transition-all group text-left opacity-80 hover:opacity-100">
                 <div className="flex items-center gap-6">
