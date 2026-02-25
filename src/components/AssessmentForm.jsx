@@ -367,6 +367,13 @@ const AssessmentForm = () => {
             .group:hover .group-hover-text-white { color: white; }
         `}</style>
 
+         <a 
+           href="https://tool.aimarketings.io/tool-list"
+           className="absolute top-6 left-6 p-3 bg-white hover:bg-slate-100 rounded-full shadow-lg transition-all text-slate-400 hover:text-slate-600 z-10"
+         >
+            <ArrowLeft size={24} />
+         </a>
+
          <button 
            onClick={() => setShowSettings(true)}
            className="absolute top-6 right-6 p-3 bg-white hover:bg-slate-100 rounded-full shadow-lg transition-all text-slate-400 hover:text-slate-600 z-10"
@@ -681,7 +688,7 @@ const AssessmentForm = () => {
               ))}
             </div>
 
-            {/* Income Section */}}
+            {/* Income Section */}
             <section className="bg-slate-50 p-6 rounded-[2rem] border border-slate-200">
               <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2"><Coins className="text-amber-600" /> 每月穩定收入</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
