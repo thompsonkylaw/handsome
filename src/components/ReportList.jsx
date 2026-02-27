@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, ArrowLeft, Loader2 } from 'lucide-react';
 import { API_BASE_URL } from '../utils';
+import { wpBtn, wpInput } from '../wpStyles';
 
 const ReportList = () => {
   const navigate = useNavigate();
@@ -9,11 +10,15 @@ const ReportList = () => {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const getUserEmail = () => window.root14appSettings?.user_email || "none@gmail.com";
+
   const fetchAssessments = async (searchTerm = '') => {
     setLoading(true);
     try {
-      const query = searchTerm ? `?search=${encodeURIComponent(searchTerm)}` : '';
-      const response = await fetch(`${API_BASE_URL}/assessments/${query}`);
+      const params = new URLSearchParams();
+      params.append('user_email', getUserEmail());
+      if (searchTerm) params.append('search', searchTerm);
+      const response = await fetch(`${API_BASE_URL}/assessments/?${params.toString()}`);
       if (response.ok) {
         console.log('Debug - Backend connection successful: Reports fetched');
         const data = await response.json();
@@ -36,6 +41,7 @@ const ReportList = () => {
         <div className="flex items-center gap-4">
           <button 
             onClick={() => navigate('/')}
+            style={wpBtn({ padding:'0.75rem', backgroundColor:'#ffffff', borderRadius:'0.75rem', boxShadow:'0 1px 2px 0 rgba(0,0,0,0.05)', color:'#64748b' })}
             className="p-3 bg-white rounded-xl shadow-sm hover:shadow-md transition-all text-slate-500 hover:text-slate-800"
           >
             <ArrowLeft size={20} />
@@ -50,6 +56,7 @@ const ReportList = () => {
             placeholder="搜尋姓名或電話號碼..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            style={wpInput({ width:'100%', padding:'1rem', paddingLeft:'3rem', borderRadius:'1rem', border:'2px solid #f1f5f9', backgroundColor:'#ffffff', boxShadow:'0 1px 2px 0 rgba(0,0,0,0.05)', fontSize:'inherit', fontWeight:'inherit' })}
             className="w-full p-4 pl-12 rounded-2xl border-2 border-slate-100 focus:border-indigo-500 outline-none shadow-sm transition-all"
           />
         </div>

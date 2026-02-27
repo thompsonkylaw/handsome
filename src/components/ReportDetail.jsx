@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Loader2, ChevronDown, ChevronRight, Save, Pencil, X, Plus, Trash2 } from 'lucide-react';
 import { getPersonAnalysis, SummaryList, formatCurrency, API_BASE_URL } from '../utils';
 import NumberPad from './NumberPad';
+import { wpBtn, wpInput, wpSelect } from '../wpStyles';
 
 /* ── tiny helpers ────────────────────────────────────── */
 const LIMITS = {
@@ -36,6 +37,7 @@ const Section = ({ title, badge, children, defaultOpen = false }) => {
     <div className="border border-slate-100 rounded-2xl overflow-hidden">
       <button
         onClick={() => setOpen(o => !o)}
+        style={wpBtn({ width:'100%', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'1rem', backgroundColor:'#f8fafc' })}
         className="w-full flex items-center justify-between p-4 bg-slate-50 hover:bg-slate-100 transition-colors"
       >
         <span className="font-bold text-slate-700 flex items-center gap-2">
@@ -75,6 +77,7 @@ const Field = ({ label, value, onChange, type = 'text', suffix, openNumpad, nump
           }
         }}
         onClick={type === 'number' && openNumpad ? (e) => { if (numpadAnchorRef) numpadAnchorRef.current = e.target; openNumpad(value, onChange, { allowDecimal: type === 'number' }); } : undefined}
+        style={wpInput({ width:'12rem', paddingLeft:'0.75rem', paddingRight:'0.75rem', paddingTop:'0.375rem', paddingBottom:'0.375rem', border:'1px solid #e2e8f0', borderRadius:'0.75rem', fontSize:'0.875rem', textAlign:'right', backgroundColor:'#ffffff', cursor: type === 'number' && openNumpad ? 'pointer' : 'auto' })}
         className={`w-48 px-3 py-1.5 border border-slate-200 rounded-xl text-sm text-right focus:border-indigo-400 outline-none transition-colors ${type === 'number' && openNumpad ? 'cursor-pointer' : ''}`}
       />
       {suffix && <span className="text-xs text-slate-400">{suffix}</span>}
@@ -88,9 +91,9 @@ const Toggle = ({ label, checked, onChange }) => (
     <span className="text-sm font-bold text-slate-500">{label}</span>
     <button
       onClick={() => onChange(!checked)}
-      className={`relative w-12 h-6 rounded-full transition-all ${checked ? 'bg-blue-500' : 'bg-slate-200'}`}
+      style={wpBtn({ position:'relative', width:'3rem', height:'1.5rem', borderRadius:'9999px', backgroundColor: checked ? '#3b82f6' : '#e2e8f0' })}
     >
-      <div className={`absolute w-4 h-4 bg-white rounded-full top-1 shadow transition-all ${checked ? 'left-7' : 'left-1'}`} />
+      <div style={{ position:'absolute', width:'1rem', height:'1rem', backgroundColor:'white', borderRadius:'9999px', top:'0.25rem', left: checked ? '1.75rem' : '0.25rem', boxShadow:'0 1px 3px rgba(0,0,0,0.1)', transition:'all 0.2s' }} />
     </button>
   </div>
 );
@@ -133,6 +136,7 @@ const ListEditor = ({ items, onChange, typeOptions, fields, openNumpad, numpadAn
           <select
             value={item.type}
             onChange={e => update(idx, { type: e.target.value })}
+            style={wpSelect({ paddingLeft:'0.5rem', paddingRight:'0.5rem', paddingTop:'0.25rem', paddingBottom:'0.25rem', border:'1px solid #e2e8f0', borderRadius:'0.5rem', fontSize:'0.875rem', flex:1, minWidth:'120px', backgroundColor:'#ffffff' })}
             className="px-2 py-1 border border-slate-200 rounded-lg text-sm flex-1 min-w-[120px]"
           >
             {typeOptions.map(t => <option key={t} value={t}>{t}</option>)}
@@ -141,6 +145,7 @@ const ListEditor = ({ items, onChange, typeOptions, fields, openNumpad, numpadAn
             <select
               value={item.status || '保留中'}
               onChange={e => update(idx, { status: e.target.value })}
+              style={wpSelect({ paddingLeft:'0.5rem', paddingRight:'0.5rem', paddingTop:'0.25rem', paddingBottom:'0.25rem', border:'1px solid #e2e8f0', borderRadius:'0.5rem', fontSize:'0.875rem', backgroundColor:'#ffffff' })}
               className="px-2 py-1 border border-slate-200 rounded-lg text-sm"
             >
               <option value="保留中">保留中</option>
@@ -162,12 +167,13 @@ const ListEditor = ({ items, onChange, typeOptions, fields, openNumpad, numpadAn
                 }
             }}
             onClick={openNumpad ? (e) => { if (numpadAnchorRef) numpadAnchorRef.current = e.target; openNumpad(item.value, (v) => update(idx, { value: parseFloat(v) || 0 })); } : undefined}
+            style={wpInput({ width:'8rem', paddingLeft:'0.5rem', paddingRight:'0.5rem', paddingTop:'0.25rem', paddingBottom:'0.25rem', border:'1px solid #e2e8f0', borderRadius:'0.5rem', fontSize:'0.875rem', textAlign:'right', backgroundColor:'#ffffff', cursor: openNumpad ? 'pointer' : 'auto' })}
             className={`w-32 px-2 py-1 border border-slate-200 rounded-lg text-sm text-right ${openNumpad ? 'cursor-pointer' : ''}`}
           />
-          <button onClick={() => remove(idx)} className="text-rose-400 hover:text-rose-600 p-1"><Trash2 size={14} /></button>
+          <button onClick={() => remove(idx)} style={wpBtn({ color:'#fb7185', padding:'0.25rem' })} className="text-rose-400 hover:text-rose-600 p-1"><Trash2 size={14} /></button>
         </div>
       ))}
-      <button onClick={add} className="flex items-center gap-1 text-xs font-bold text-blue-500 hover:text-blue-700">
+      <button onClick={add} style={wpBtn({ display:'flex', alignItems:'center', gap:'0.25rem', fontSize:'0.75rem', fontWeight:'700', color:'#3b82f6' })} className="flex items-center gap-1 text-xs font-bold text-blue-500 hover:text-blue-700">
         <Plus size={14} /> 新增項目
       </button>
     </div>
@@ -424,21 +430,21 @@ const ReportDetail = () => {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button onClick={() => navigate(-1)} className="p-3 bg-white rounded-xl shadow-sm text-slate-500 hover:text-slate-800 transition-colors"><ArrowLeft size={20} /></button>
+            <button onClick={() => navigate(-1)} style={wpBtn({ padding:'0.75rem', backgroundColor:'#ffffff', borderRadius:'0.75rem', boxShadow:'0 1px 2px 0 rgba(0,0,0,0.05)', color:'#64748b' })} className="p-3 bg-white rounded-xl shadow-sm text-slate-500 hover:text-slate-800 transition-colors"><ArrowLeft size={20} /></button>
             <h1 className="text-2xl font-black text-slate-800">體檢報告詳情</h1>
           </div>
           <div className="flex gap-2">
             {editing ? (
               <>
-                <button onClick={handleCancel} className="flex items-center gap-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors">
+                <button onClick={handleCancel} style={wpBtn({ display:'flex', alignItems:'center', gap:'0.25rem', paddingLeft:'1rem', paddingRight:'1rem', paddingTop:'0.5rem', paddingBottom:'0.5rem', backgroundColor:'#f1f5f9', color:'#475569', borderRadius:'0.75rem', fontWeight:'700', fontSize:'0.875rem' })} className="flex items-center gap-1 px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-200 transition-colors">
                   <X size={16} /> 取消
                 </button>
-                <button onClick={handleSave} disabled={saving} className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50">
+                <button onClick={handleSave} disabled={saving} style={wpBtn({ display:'flex', alignItems:'center', gap:'0.25rem', paddingLeft:'1rem', paddingRight:'1rem', paddingTop:'0.5rem', paddingBottom:'0.5rem', backgroundColor:'#2563eb', color:'#ffffff', borderRadius:'0.75rem', fontWeight:'700', fontSize:'0.875rem' })} className="flex items-center gap-1 px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors disabled:opacity-50">
                   {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} 儲存
                 </button>
               </>
             ) : (
-              <button onClick={() => setEditing(true)} className="flex items-center gap-1 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-colors">
+              <button onClick={() => setEditing(true)} style={wpBtn({ display:'flex', alignItems:'center', gap:'0.25rem', paddingLeft:'1rem', paddingRight:'1rem', paddingTop:'0.5rem', paddingBottom:'0.5rem', backgroundColor:'#ffffff', border:'1px solid #e2e8f0', color:'#475569', borderRadius:'0.75rem', fontWeight:'700', fontSize:'0.875rem' })} className="flex items-center gap-1 px-4 py-2 bg-white border border-slate-200 text-slate-600 rounded-xl font-bold text-sm hover:bg-slate-50 transition-colors">
                 <Pencil size={16} /> 編輯
               </button>
             )}

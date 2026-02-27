@@ -10,6 +10,7 @@ import {
   PiggyBank, Wallet, Construction, Settings, X
 } from 'lucide-react';
 import NumberPad from './NumberPad';
+import { wpBtn, wpInput, wpSelect } from '../wpStyles';
 
 const COMPANIES = [
   { color: '#009739', company: 'Manulife' },
@@ -70,14 +71,24 @@ const formatInputDisplay = (val) => {
 
 // --- UI Components ---
 
-const ToggleButton = ({ active, onClick, color = "bg-blue-600" }) => (
-  <button 
-    onClick={onClick} 
-    className={`relative w-14 h-7 rounded-full transition-all duration-300 ${active ? color : 'bg-slate-200'}`}
-  >
-    <div className={`absolute w-5 h-5 bg-white rounded-full top-1 shadow-md transition-all duration-300 ${active ? 'left-8' : 'left-1'}`} />
-  </button>
-);
+const ToggleButton = ({ active, onClick, color = "bg-blue-600" }) => {
+  const colorMap = { 'bg-blue-600': '#2563eb', 'bg-indigo-600': '#4f46e5', 'bg-amber-600': '#d97706' };
+  return (
+    <button 
+      onClick={onClick} 
+      style={wpBtn({
+        position: 'relative', width: '3.5rem', height: '1.75rem', borderRadius: '9999px',
+        transition: 'all 0.3s', backgroundColor: active ? (colorMap[color] || '#2563eb') : '#e2e8f0',
+      })}
+    >
+      <div style={{
+        position: 'absolute', width: '1.25rem', height: '1.25rem', backgroundColor: 'white',
+        borderRadius: '9999px', top: '0.25rem', left: active ? '2rem' : '0.25rem',
+        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)', transition: 'all 0.3s',
+      }} />
+    </button>
+  );
+};
 
 const GaugeChart = ({ value, limit, label }) => {
   const percentage = Math.min((value / limit) * 100, 100);
@@ -137,6 +148,11 @@ const ToggleInput = ({ label, enabled, value, onToggle, onValueChange, color="bl
           readOnly
           value={value === 0 ? '' : formatInputDisplay(value)} 
           onClick={(e) => { if (openNumpad) { if (numpadAnchorRef) numpadAnchorRef.current = e.target; openNumpad(value, onValueChange); } }}
+          style={wpInput({
+            width: '100%', paddingLeft: '2rem', paddingRight: '1rem', paddingTop: '0.5rem', paddingBottom: '0.5rem',
+            fontSize: '1.25rem', fontWeight: '700', borderRadius: '0.75rem', border: '2px solid transparent',
+            backgroundColor: '#ffffff', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)', cursor: 'pointer',
+          })}
           className="w-full pl-8 pr-4 py-2 text-xl font-bold rounded-xl border-2 border-transparent focus:border-blue-300 outline-none bg-white shadow-sm cursor-pointer" 
           placeholder="0" 
         />
@@ -166,6 +182,12 @@ const InputField = ({ label, icon, value, onChange, type="text", placeholder, er
         }
       }} 
       onClick={type === 'number' && openNumpad ? (e) => { if (numpadAnchorRef) numpadAnchorRef.current = e.target; openNumpad(value, onChange, { allowDecimal: false }); } : undefined}
+      style={wpInput({
+        width: '100%', padding: '1rem', fontSize: '1.125rem', fontWeight: '700',
+        border: error ? '2px solid #f43f5e' : '2px solid #f1f5f9', borderRadius: '1rem',
+        backgroundColor: error ? '#fff1f2' : '#ffffff', boxShadow: '0 1px 2px 0 rgba(0,0,0,0.05)',
+        transition: 'all 0.2s', cursor: type === 'number' && openNumpad ? 'pointer' : 'auto',
+      })}
       className={`w-full p-4 text-lg font-bold border-2 rounded-2xl bg-white outline-none shadow-sm transition-all ${type === 'number' && openNumpad ? 'cursor-pointer ' : ''}${error ? 'border-rose-500 bg-rose-50 focus:border-rose-600' : 'border-slate-100 focus:border-blue-400'}`} 
       placeholder={placeholder} 
     />
@@ -261,7 +283,7 @@ const AssessmentForm = () => {
     );
   };
 
-  const getUserEmail = () => window.root13appSettings?.user_email || "none@gmail.com";
+  const getUserEmail = () => window.root14appSettings?.user_email || "none@gmail.com";
 
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'smooth' }); }, [step]);
 
@@ -376,6 +398,7 @@ const AssessmentForm = () => {
 
          <button 
            onClick={() => setShowSettings(true)}
+           style={wpBtn({ backgroundColor:'#ffffff', padding:'0.75rem', borderRadius:'9999px', boxShadow:'0 10px 15px -3px rgba(0,0,0,0.1)', color:'#94a3b8' })}
            className="absolute top-6 right-6 p-3 bg-white hover:bg-slate-100 rounded-full shadow-lg transition-all text-slate-400 hover:text-slate-600 z-10"
          >
             <Settings size={24} />
@@ -386,7 +409,7 @@ const AssessmentForm = () => {
                <div className="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl space-y-6">
                   <div className="flex items-center justify-between">
                      <h3 className="text-xl font-black text-slate-800">選擇主題顏色</h3>
-                     <button onClick={() => setShowSettings(false)} className="text-slate-400 hover:text-slate-600">
+                     <button onClick={() => setShowSettings(false)} style={wpBtn({ color:'#94a3b8' })} className="text-slate-400 hover:text-slate-600">
                         <X size={24} />
                      </button>
                   </div>
@@ -395,6 +418,7 @@ const AssessmentForm = () => {
                         <button 
                            key={c.company}
                            onClick={() => { setThemeColor(c.color); setShowSettings(false); }}
+                           style={wpBtn({ display:'flex', flexDirection:'column', alignItems:'center', gap:'0.5rem' })}
                            className="flex flex-col items-center gap-2 group"
                         >
                            <div 
@@ -415,18 +439,18 @@ const AssessmentForm = () => {
            <div className="inline-block p-4 bg-white rounded-full shadow-lg mb-4">
              <HeartPulse size={48} className="text-rose-500" />
            </div>
-           <h1 className="text-4xl font-black text-slate-800 tracking-tight">請選擇體檢項目</h1>
+           <h1 className="text-4xl font-black text-slate-800 tracking-tight" style={{ fontSize: '2.25rem', fontWeight: '900', color: '#1e293b', letterSpacing: '-0.025em' }}>請選擇體檢項目</h1>
            <p className="text-slate-500 font-bold">歡迎使用自助評估系統</p>
            
            <div className="grid gap-6 mt-8">
-             <button onClick={() => setStep('intro')} className="p-8 bg-white rounded-[2rem] shadow-xl border-4 border-slate-50 theme-hover-border hover:shadow-2xl hover:scale-[1.02] transition-all group text-left relative overflow-hidden">
+             <button onClick={() => setStep('intro')} style={wpBtn({ padding:'2rem', backgroundColor:'#ffffff', borderRadius:'2rem', boxShadow:'0 20px 25px -5px rgba(0,0,0,0.1)', border:'4px solid #f8fafc', textAlign:'left', position:'relative', overflow:'hidden', color:'inherit' })} className="p-8 bg-white rounded-[2rem] shadow-xl border-4 border-slate-50 theme-hover-border hover:shadow-2xl hover:scale-[1.02] transition-all group text-left relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-3 theme-bg text-white font-black text-xs rounded-bl-2xl">熱門</div>
                 <div className="flex items-center gap-6 relative z-10">
                    <div className="theme-light-bg p-5 rounded-2xl theme-text group-hover-theme-bg group-hover-text-white transition-colors duration-300">
                       <Calculator size={40} />
                    </div>
                    <div>
-                      <h3 className="text-2xl font-black text-slate-800 group-hover-theme-text transition-colors">長者生活津貼體檢</h3>
+                      <h3 className="text-2xl font-black text-slate-800 group-hover-theme-text transition-colors" style={{ fontSize: '1.5rem', fontWeight: '900', color: '#1e293b' }}>長者生活津貼體檢</h3>
                       <p className="text-slate-500 font-bold mt-2 text-sm">資產及入息審查 • 合資格預算</p>
                    </div>
                    <ArrowRight className="ml-auto text-slate-300 group-hover-theme-text group-hover:translate-x-2 transition-all" size={32} />
@@ -434,13 +458,13 @@ const AssessmentForm = () => {
              </button>
 
              {appConfig.showGeneralCheckup && (
-               <button onClick={() => setStep('general_checkup')} className="p-8 bg-white rounded-[2rem] shadow-xl border-4 border-slate-50 hover:border-emerald-500 hover:shadow-2xl hover:scale-[1.02] transition-all group text-left opacity-80 hover:opacity-100">
+               <button onClick={() => setStep('general_checkup')} style={wpBtn({ padding:'2rem', backgroundColor:'#ffffff', borderRadius:'2rem', boxShadow:'0 20px 25px -5px rgba(0,0,0,0.1)', border:'4px solid #f8fafc', textAlign:'left', color:'inherit', opacity:0.8 })} className="p-8 bg-white rounded-[2rem] shadow-xl border-4 border-slate-50 hover:border-emerald-500 hover:shadow-2xl hover:scale-[1.02] transition-all group text-left opacity-80 hover:opacity-100">
                   <div className="flex items-center gap-6">
                      <div className="bg-emerald-100 p-5 rounded-2xl text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white transition-colors duration-300">
                         <Activity size={40} />
                      </div>
                      <div>
-                        <h3 className="text-2xl font-black text-slate-800 group-hover:text-emerald-600 transition-colors">一般體檢</h3>
+                        <h3 className="text-2xl font-black text-slate-800 group-hover:text-emerald-600 transition-colors" style={{ fontSize: '1.5rem', fontWeight: '900', color: '#1e293b' }}>一般體檢</h3>
                         <p className="text-slate-500 font-bold mt-2 text-sm">身體檢查 • 健康報告</p>
                      </div>
                      <ArrowRight className="ml-auto text-slate-300 group-hover:text-emerald-500 group-hover:translate-x-2 transition-all" size={32} />
@@ -448,13 +472,13 @@ const AssessmentForm = () => {
                </button>
              )}
 
-             <button onClick={() => navigate('/reports')} className="p-8 bg-white rounded-[2rem] shadow-xl border-4 border-slate-50 hover:border-blue-500 hover:shadow-2xl hover:scale-[1.02] transition-all group text-left opacity-80 hover:opacity-100">
+             <button onClick={() => navigate('/reports')} style={wpBtn({ padding:'2rem', backgroundColor:'#ffffff', borderRadius:'2rem', boxShadow:'0 20px 25px -5px rgba(0,0,0,0.1)', border:'4px solid #f8fafc', textAlign:'left', color:'inherit', opacity:0.8 })} className="p-8 bg-white rounded-[2rem] shadow-xl border-4 border-slate-50 hover:border-blue-500 hover:shadow-2xl hover:scale-[1.02] transition-all group text-left opacity-80 hover:opacity-100">
                 <div className="flex items-center gap-6">
                    <div className="bg-blue-100 p-5 rounded-2xl text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
                       <ListChecks size={40} />
                    </div>
                    <div>
-                      <h3 className="text-2xl font-black text-slate-800 group-hover:text-blue-600 transition-colors">查詢體檢報告</h3>
+                      <h3 className="text-2xl font-black text-slate-800 group-hover:text-blue-600 transition-colors" style={{ fontSize: '1.5rem', fontWeight: '900', color: '#1e293b' }}>查詢體檢報告</h3>
                       <p className="text-slate-500 font-bold mt-2 text-sm">搜尋往日記錄 • 詳細資料</p>
                    </div>
                    <ArrowRight className="ml-auto text-slate-300 group-hover:text-blue-500 group-hover:translate-x-2 transition-all" size={32} />
@@ -474,11 +498,11 @@ const AssessmentForm = () => {
                      <Construction size={64} className="text-amber-600" />
                 </div>
                 <div className="space-y-4">
-                  <h2 className="text-4xl font-black text-slate-800">功能建設中</h2>
+                  <h2 className="text-4xl font-black text-slate-800" style={{ fontSize: '2.25rem', fontWeight: '900', color: '#1e293b' }}>功能建設中</h2>
                   <p className="text-slate-400 font-bold text-xl uppercase tracking-widest">Under Construction</p>
                 </div>
                 <div className="pt-8">
-                  <button onClick={() => setStep('landing')} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-black hover:scale-105 transition-all flex items-center justify-center gap-3">
+                  <button onClick={() => setStep('landing')} style={wpBtn({ width:'100%', paddingTop:'1rem', paddingBottom:'1rem', backgroundColor:'#1e293b', color:'#ffffff', borderRadius:'1rem', fontWeight:'900', fontSize:'1.125rem', boxShadow:'0 20px 25px -5px rgba(0,0,0,0.1)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.75rem' })} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-black text-lg shadow-xl hover:bg-black hover:scale-105 transition-all flex items-center justify-center gap-3">
                       <Undo2 size={20} /> 返回首頁
                   </button>
                 </div>
@@ -502,6 +526,7 @@ const AssessmentForm = () => {
           <div className="theme-bg p-8 text-white text-center relative">
             <button 
                 onClick={() => setStep('landing')}
+                style={wpBtn({ backgroundColor:'rgba(255,255,255,0.2)', padding:'0.5rem', borderRadius:'0.75rem', color:'#ffffff' })}
                 className="absolute left-6 top-6 bg-white/20 p-2 rounded-xl hover:bg-white/30 transition-all text-white"
             >
                 <ArrowLeft size={24} />
@@ -509,16 +534,16 @@ const AssessmentForm = () => {
             <div className="bg-white/20 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 backdrop-blur-sm">
               <Calculator className="w-10 h-10" />
             </div>
-            <h1 className="text-3xl font-black tracking-tight">長者生活津貼體檢</h1>
+            <h1 className="text-3xl font-black tracking-tight" style={{ fontSize: '1.875rem', fontWeight: '900', letterSpacing: '-0.025em', color: '#ffffff' }}>長者生活津貼體檢</h1>
             <p className="text-white/90 mt-1 font-bold text-sm">2025 / 2026 年度入息及資產審核</p>
           </div>
           
           <div className="p-6 space-y-6">
             <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => setIsMarried(false)} className={`py-4 rounded-2xl font-bold border-2 transition-all flex items-center justify-center gap-2 ${!isMarried ? 'theme-bg text-white theme-border shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'}`}>
+              <button onClick={() => setIsMarried(false)} style={wpBtn({ paddingTop:'1rem', paddingBottom:'1rem', borderRadius:'1rem', fontWeight:'700', border:'2px solid', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', backgroundColor: !isMarried ? themeColor : '#ffffff', color: !isMarried ? '#ffffff' : '#94a3b8', borderColor: !isMarried ? themeColor : '#f1f5f9', boxShadow: !isMarried ? '0 10px 15px -3px rgba(0,0,0,0.1)' : 'none' })} className={`py-4 rounded-2xl font-bold border-2 transition-all flex items-center justify-center gap-2 ${!isMarried ? 'theme-bg text-white theme-border shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'}`}>
                 <User size={18} /> 個人申請
               </button>
-              <button onClick={() => setIsMarried(true)} className={`py-4 rounded-2xl font-bold border-2 transition-all flex items-center justify-center gap-2 ${isMarried ? 'theme-bg text-white theme-border shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'}`}>
+              <button onClick={() => setIsMarried(true)} style={wpBtn({ paddingTop:'1rem', paddingBottom:'1rem', borderRadius:'1rem', fontWeight:'700', border:'2px solid', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', backgroundColor: isMarried ? themeColor : '#ffffff', color: isMarried ? '#ffffff' : '#94a3b8', borderColor: isMarried ? themeColor : '#f1f5f9', boxShadow: isMarried ? '0 10px 15px -3px rgba(0,0,0,0.1)' : 'none' })} className={`py-4 rounded-2xl font-bold border-2 transition-all flex items-center justify-center gap-2 ${isMarried ? 'theme-bg text-white theme-border shadow-lg' : 'bg-white text-slate-400 border-slate-100 hover:border-slate-300'}`}>
                 <Users size={18} /> 夫婦申請
               </button>
             </div>
@@ -548,6 +573,7 @@ const AssessmentForm = () => {
             <button 
               disabled={!canGoNext}
               onClick={() => setStep('p1_calc')}
+              style={wpBtn({ width:'100%', paddingTop:'1.25rem', paddingBottom:'1.25rem', borderRadius:'9999px', fontSize:'1.25rem', fontWeight:'900', boxShadow:'0 20px 25px -5px rgba(0,0,0,0.1)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.75rem', backgroundColor: canGoNext ? '#f59e0b' : '#e2e8f0', color: canGoNext ? '#ffffff' : '#94a3b8', cursor: canGoNext ? 'pointer' : 'not-allowed' })}
               className={`w-full py-5 rounded-full text-xl font-black shadow-xl transition-all flex items-center justify-center gap-3 ${canGoNext ? 'bg-amber-500 text-white hover:bg-amber-600 active:scale-95' : 'bg-slate-200 text-slate-400 cursor-not-allowed'}`}
             >
               填寫資產資料 <ArrowRight size={24} />
@@ -565,8 +591,8 @@ const AssessmentForm = () => {
         <div className="max-w-2xl w-full bg-white rounded-[2.5rem] shadow-xl overflow-hidden border border-slate-100">
           <div className="bg-blue-700 p-6 text-white flex justify-between items-center">
             <div className="flex items-center gap-3">
-               <button onClick={() => setStep(isFirst ? 'intro' : 'p1_calc')} className="bg-white/20 p-2 rounded-xl hover:bg-white/30 transition-all"><ArrowLeft size={20}/></button>
-               <h2 className="text-xl font-black">體檢項目：{person.name || (isFirst ? "第一位" : "第二位")}</h2>
+               <button onClick={() => setStep(isFirst ? 'intro' : 'p1_calc')} style={wpBtn({ backgroundColor:'rgba(255,255,255,0.2)', padding:'0.5rem', borderRadius:'0.75rem', color:'#ffffff' })} className="bg-white/20 p-2 rounded-xl hover:bg-white/30 transition-all"><ArrowLeft size={20}/></button>
+               <h2 className="text-xl font-black" style={{ fontSize: '1.25rem', fontWeight: '900', color: '#ffffff' }}>體檢項目：{person.name || (isFirst ? "第一位" : "第二位")}</h2>
             </div>
             <div className="bg-amber-500 px-4 py-1 rounded-full font-black text-xs shadow-md uppercase tracking-widest">{isFirst ? '1' : '2'} / {isMarried ? '2' : '1'}</div>
           </div>
@@ -575,7 +601,7 @@ const AssessmentForm = () => {
             {/* Property Section */}
             <section className="space-y-4">
               <div className="flex justify-between items-center border-b-2 border-blue-500 pb-2">
-                <h3 className="text-xl font-black text-slate-800 flex items-center gap-2"><Building2 size={20} className="text-blue-600" /> 物業清單</h3>
+                <h3 className="text-xl font-black text-slate-800 flex items-center gap-2" style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1e293b' }}><Building2 size={20} className="text-blue-600" /> 物業清單</h3>
                 <ToggleButton active={person.propertyEnabled} onClick={() => setPerson({...person, propertyEnabled: !person.propertyEnabled})} />
               </div>
               {person.propertyEnabled && (
@@ -588,26 +614,26 @@ const AssessmentForm = () => {
                             const newProps = [...person.properties];
                             newProps[idx] = { ...newProps[idx], type: t };
                             setPerson({...person, properties: newProps});
-                          }} className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all ${prop.type === t ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-slate-400 border-transparent'}`}>{t}</button>
+                          }} style={wpBtn({ flex:1, paddingTop:'0.5rem', paddingBottom:'0.5rem', borderRadius:'0.75rem', fontSize:'0.75rem', fontWeight:'700', border:'2px solid', backgroundColor: prop.type === t ? '#2563eb' : '#ffffff', color: prop.type === t ? '#ffffff' : '#94a3b8', borderColor: prop.type === t ? '#2563eb' : 'transparent', boxShadow: prop.type === t ? '0 1px 2px 0 rgba(0,0,0,0.05)' : 'none' })} className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all ${prop.type === t ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-white text-slate-400 border-transparent'}`}>{t}</button>
                         ))}
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="relative flex-1">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-300">$</span>
-                          <input type="text" inputMode="none" readOnly value={prop.value || ''} onClick={(e) => {
+                          <input type="text" inputMode="none" readOnly value={prop.value ? formatInputDisplay(prop.value) : ''} onClick={(e) => {
                             numpadAnchorRef.current = e.target;
                             openNumpad(prop.value, (v) => {
                               const newProps = [...person.properties];
                               newProps[idx] = { ...newProps[idx], value: v === '' ? 0 : parseFloat(v) };
                               setPerson({...person, properties: newProps});
                             });
-                          }} className="w-full pl-10 pr-4 py-3 text-lg font-black rounded-xl border-2 border-white focus:border-blue-400 outline-none shadow-sm cursor-pointer" placeholder="物業估值" />
+                          }} style={wpInput({ width:'100%', paddingLeft:'2.5rem', paddingRight:'1rem', paddingTop:'0.75rem', paddingBottom:'0.75rem', fontSize:'1.125rem', fontWeight:'900', borderRadius:'0.75rem', border:'2px solid #ffffff', backgroundColor:'#ffffff', boxShadow:'0 1px 2px 0 rgba(0,0,0,0.05)', cursor:'pointer' })} className="w-full pl-10 pr-4 py-3 text-lg font-black rounded-xl border-2 border-white focus:border-blue-400 outline-none shadow-sm cursor-pointer" placeholder="物業估值" />
                         </div>
-                        <button onClick={() => setPerson({...person, properties: person.properties.filter(p => p.id !== prop.id)})} className="text-rose-400 p-2 hover:bg-rose-50 rounded-full transition-all"><Trash2 size={20}/></button>
+                        <button onClick={() => setPerson({...person, properties: person.properties.filter(p => p.id !== prop.id)})} style={wpBtn({ color:'#fb7185', padding:'0.5rem', borderRadius:'9999px' })} className="text-rose-400 p-2 hover:bg-rose-50 rounded-full transition-all"><Trash2 size={20}/></button>
                       </div>
                     </div>
                   ))}
-                  <button onClick={() => setPerson({...person, properties: [...person.properties, { id: Date.now(), type: '非自住物業', value: 0 }]})} className="w-full py-3 border-2 border-dashed border-blue-200 rounded-2xl text-blue-600 font-bold text-sm flex justify-center items-center gap-2 hover:bg-blue-50 transition-colors"><Plus size={16}/> 新增物業</button>
+                  <button onClick={() => setPerson({...person, properties: [...person.properties, { id: Date.now(), type: '非自住物業', value: 0 }]})} style={wpBtn({ width:'100%', paddingTop:'0.75rem', paddingBottom:'0.75rem', border:'2px dashed #bfdbfe', borderRadius:'1rem', color:'#2563eb', fontWeight:'700', fontSize:'0.875rem', display:'flex', justifyContent:'center', alignItems:'center', gap:'0.5rem' })} className="w-full py-3 border-2 border-dashed border-blue-200 rounded-2xl text-blue-600 font-bold text-sm flex justify-center items-center gap-2 hover:bg-blue-50 transition-colors"><Plus size={16}/> 新增物業</button>
                 </div>
               )}
             </section>
@@ -615,7 +641,7 @@ const AssessmentForm = () => {
             {/* MPF Section */}
             <section className="space-y-4">
               <div className="flex justify-between items-center border-b-2 border-indigo-500 pb-2">
-                <h3 className="text-xl font-black text-slate-800 flex items-center gap-2"><PiggyBank size={20} className="text-indigo-600" /> 強積金 (MPF)</h3>
+                <h3 className="text-xl font-black text-slate-800 flex items-center gap-2" style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1e293b' }}><PiggyBank size={20} className="text-indigo-600" /> 強積金 (MPF)</h3>
                 <ToggleButton active={person.mpfEnabled} onClick={() => setPerson({...person, mpfEnabled: !person.mpfEnabled})} color="bg-indigo-600" />
               </div>
               {person.mpfEnabled && (
@@ -628,20 +654,20 @@ const AssessmentForm = () => {
                             const newMpf = [...person.mpfItems];
                             newMpf[idx] = { ...newMpf[idx], type: t };
                             setPerson({...person, mpfItems: newMpf});
-                          }} className={`px-3 py-1.5 rounded-lg text-[10px] font-black border-2 ${item.type === t ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-white text-slate-400 border-transparent'}`}>{t}</button>
+                          }} style={wpBtn({ paddingLeft:'0.75rem', paddingRight:'0.75rem', paddingTop:'0.375rem', paddingBottom:'0.375rem', borderRadius:'0.5rem', fontSize:'10px', fontWeight:'900', border:'2px solid', backgroundColor: item.type === t ? '#4f46e5' : '#ffffff', color: item.type === t ? '#ffffff' : '#94a3b8', borderColor: item.type === t ? '#4f46e5' : 'transparent', boxShadow: item.type === t ? '0 1px 2px 0 rgba(0,0,0,0.05)' : 'none' })} className={`px-3 py-1.5 rounded-lg text-[10px] font-black border-2 ${item.type === t ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm' : 'bg-white text-slate-400 border-transparent'}`}>{t}</button>
                         ))}
                       </div>
                       <div className="flex flex-col sm:flex-row gap-3 items-center">
                         <div className="relative flex-1 w-full">
                           <span className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-300">$</span>
-                          <input type="text" inputMode="none" readOnly value={item.value || ''} onClick={(e) => {
+                          <input type="text" inputMode="none" readOnly value={item.value ? formatInputDisplay(item.value) : ''} onClick={(e) => {
                             numpadAnchorRef.current = e.target;
                             openNumpad(item.value, (v) => {
                               const newMpf = [...person.mpfItems];
                               newMpf[idx] = { ...newMpf[idx], value: v === '' ? 0 : parseFloat(v) };
                               setPerson({...person, mpfItems: newMpf});
                             });
-                          }} className="w-full pl-10 pr-4 py-3 text-lg font-black rounded-xl border-2 border-white focus:border-indigo-400 outline-none shadow-sm cursor-pointer" placeholder="戶口價值" />
+                          }} style={wpInput({ width:'100%', paddingLeft:'2.5rem', paddingRight:'1rem', paddingTop:'0.75rem', paddingBottom:'0.75rem', fontSize:'1.125rem', fontWeight:'900', borderRadius:'0.75rem', border:'2px solid #ffffff', backgroundColor:'#ffffff', boxShadow:'0 1px 2px 0 rgba(0,0,0,0.05)', cursor:'pointer' })} className="w-full pl-10 pr-4 py-3 text-lg font-black rounded-xl border-2 border-white focus:border-indigo-400 outline-none shadow-sm cursor-pointer" placeholder="戶口價值" />
                         </div>
                         <div className="flex items-center gap-2 w-full sm:w-auto">
                           {item.type === '公積金' && (
@@ -649,12 +675,12 @@ const AssessmentForm = () => {
                               const newMpf = [...person.mpfItems];
                               newMpf[idx] = { ...newMpf[idx], status: e.target.value };
                               setPerson({...person, mpfItems: newMpf});
-                            }} className="flex-1 p-3 border-2 border-white bg-white rounded-xl text-xs font-bold shadow-sm outline-none">
+                            }} style={wpSelect({ flex:1, padding:'0.75rem', border:'2px solid #ffffff', backgroundColor:'#ffffff', borderRadius:'0.75rem', fontSize:'0.75rem', fontWeight:'700', boxShadow:'0 1px 2px 0 rgba(0,0,0,0.05)' })} className="flex-1 p-3 border-2 border-white bg-white rounded-xl text-xs font-bold shadow-sm outline-none">
                               <option value="保留中">保留中 (不計)</option>
                               <option value="已提取">已提取 (計入)</option>
                             </select>
                           )}
-                          <button onClick={() => setPerson({...person, mpfItems: person.mpfItems.filter(m => m.id !== item.id)})} className="text-rose-400 p-2 hover:bg-rose-50 rounded-full transition-all shrink-0"><Trash2 size={20}/></button>
+                          <button onClick={() => setPerson({...person, mpfItems: person.mpfItems.filter(m => m.id !== item.id)})} style={wpBtn({ color:'#fb7185', padding:'0.5rem', borderRadius:'9999px' })} className="text-rose-400 p-2 hover:bg-rose-50 rounded-full transition-all shrink-0"><Trash2 size={20}/></button>
                         </div>
                       </div>
                       <div className="text-[10px] font-black italic text-blue-600 text-right px-1">
@@ -663,7 +689,7 @@ const AssessmentForm = () => {
                       </div>
                     </div>
                   ))}
-                  <button onClick={() => setPerson({...person, mpfItems: [...person.mpfItems, { id: Date.now(), type: '強制性供款', value: 0, status: '保留中' }]})} className="w-full py-3 border-2 border-dashed border-indigo-200 rounded-2xl text-indigo-600 font-bold text-sm flex justify-center items-center gap-2 hover:bg-indigo-50 transition-colors"><Plus size={16}/> 新增項目</button>
+                  <button onClick={() => setPerson({...person, mpfItems: [...person.mpfItems, { id: Date.now(), type: '強制性供款', value: 0, status: '保留中' }]})} style={wpBtn({ width:'100%', paddingTop:'0.75rem', paddingBottom:'0.75rem', border:'2px dashed #c7d2fe', borderRadius:'1rem', color:'#4f46e5', fontWeight:'700', fontSize:'0.875rem', display:'flex', justifyContent:'center', alignItems:'center', gap:'0.5rem' })} className="w-full py-3 border-2 border-dashed border-indigo-200 rounded-2xl text-indigo-600 font-bold text-sm flex justify-center items-center gap-2 hover:bg-indigo-50 transition-colors"><Plus size={16}/> 新增項目</button>
                 </div>
               )}
             </section>
@@ -690,7 +716,7 @@ const AssessmentForm = () => {
 
             {/* Income Section */}
             <section className="bg-slate-50 p-6 rounded-[2rem] border border-slate-200">
-              <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2"><Coins className="text-amber-600" /> 每月穩定收入</h3>
+              <h3 className="text-xl font-black text-slate-800 mb-6 flex items-center gap-2" style={{ fontSize: '1.25rem', fontWeight: '900', color: '#1e293b' }}><Coins className="text-amber-600" /> 每月穩定收入</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {Object.entries(person.income).map(([key, item]) => (
                   <ToggleInput key={key} label={item.label} enabled={item.enabled} value={item.value} color="amber"
@@ -714,8 +740,8 @@ const AssessmentForm = () => {
           </div>
 
           <div className="p-6 bg-slate-50 border-t flex flex-col sm:flex-row gap-4">
-            <button onClick={() => setStep(isFirst ? 'intro' : 'p1_calc')} className="flex-1 py-4 bg-slate-200 text-slate-600 rounded-2xl text-lg font-black transition-all flex items-center justify-center gap-2 hover:bg-slate-300"><ArrowLeft size={20}/> 上一步</button>
-            <button onClick={() => { if (isFirst && isMarried) setStep('p2_calc'); else setStep('result'); }} className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl text-xl font-black shadow-lg transition-all flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-95">
+            <button onClick={() => setStep(isFirst ? 'intro' : 'p1_calc')} style={wpBtn({ flex:1, paddingTop:'1rem', paddingBottom:'1rem', backgroundColor:'#e2e8f0', color:'#475569', borderRadius:'1rem', fontSize:'1.125rem', fontWeight:'900', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem' })} className="flex-1 py-4 bg-slate-200 text-slate-600 rounded-2xl text-lg font-black transition-all flex items-center justify-center gap-2 hover:bg-slate-300"><ArrowLeft size={20}/> 上一步</button>
+            <button onClick={() => { if (isFirst && isMarried) setStep('p2_calc'); else setStep('result'); }} style={wpBtn({ flex:2, paddingTop:'1rem', paddingBottom:'1rem', backgroundColor:'#2563eb', color:'#ffffff', borderRadius:'1rem', fontSize:'1.25rem', fontWeight:'900', boxShadow:'0 10px 15px -3px rgba(0,0,0,0.1)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem' })} className="flex-[2] py-4 bg-blue-600 text-white rounded-2xl text-xl font-black shadow-lg transition-all flex items-center justify-center gap-2 hover:bg-blue-700 active:scale-95">
               {isFirst && isMarried ? "下一步：配偶資料" : "查看評估報告"} <ArrowRight size={20}/>
             </button>
           </div>
@@ -745,11 +771,11 @@ const AssessmentForm = () => {
                 {isEligible ? <CheckCircle2 size={56} /> : <XCircle size={56} />}
               </div>
               <div>
-                <h2 className="text-4xl font-black">{isEligible ? "符合申請資格" : "體檢結果：超標"}</h2>
+                <h2 className="text-4xl font-black" style={{ fontSize: '2.25rem', fontWeight: '900', color: '#ffffff' }}>{isEligible ? "符合申請資格" : "體檢結果：超標"}</h2>
                 <p className="text-white/80 font-bold mt-1">{p1.name} {isMarried && `及 ${p2.name}`} 的專屬分析</p>
               </div>
             </div>
-            <div className="bg-black/10 px-6 py-3 rounded-2xl border border-white/20 text-center text-white shrink-0">
+            <div className="bg-black/10 px-6 py-3 rounded-2xl border border-white/20 text-center text-white shrink-0">  
               <div className="text-[10px] font-black uppercase opacity-60 tracking-[0.2em]">年度基準</div>
               <div className="text-2xl font-black italic">2025 / 2026</div>
             </div>
@@ -761,7 +787,7 @@ const AssessmentForm = () => {
           </div>
 
           <div className="bg-white p-8 rounded-[2.5rem] shadow-sm border border-slate-100 space-y-8">
-            <h4 className="text-2xl font-black text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-4"><ListChecks className="text-blue-600" /> 申報項明細</h4>
+            <h4 className="text-2xl font-black text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-4" style={{ fontSize: '1.5rem', fontWeight: '900', color: '#1e293b' }}><ListChecks className="text-blue-600" /> 申報項明細</h4>
             <div className="grid gap-10">
               <SummaryList name={p1.name} details={p1Analysis.details} />
               {isMarried && <SummaryList name={p2.name} details={p2Analysis.details} />}
@@ -772,20 +798,21 @@ const AssessmentForm = () => {
             <button 
               onClick={saveToDatabase}
               disabled={saveStatus === 'saving' || saveStatus === 'success'}
+              style={wpBtn({ paddingTop:'1rem', paddingBottom:'1rem', color:'#ffffff', borderRadius:'1rem', fontWeight:'900', fontSize:'0.875rem', boxShadow:'0 4px 6px -1px rgba(0,0,0,0.1)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem', backgroundColor: saveStatus === 'success' ? '#10b981' : (saveStatus === 'error' ? '#f43f5e' : '#4f46e5') })}
               className={`py-4 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 transition-all 
                 ${saveStatus === 'success' ? 'bg-emerald-500' : (saveStatus === 'error' ? 'bg-rose-500' : 'bg-indigo-600 hover:bg-indigo-700')}`}
             >
               {saveStatus === 'saving' ? <Activity className="animate-spin" size={18} /> : (saveStatus === 'success' ? <CheckCircle2 size={18} /> : <Landmark size={18} />)} 
               {saveStatus === 'success' ? '已儲存' : (saveStatus === 'error' ? '儲存失敗' : '儲存結果')}
             </button>
-            <button onClick={exportToCSV} className="py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all"><Download size={18}/> 導出報表 (CSV)</button>
-            <button onClick={() => setStep(isMarried ? 'p2_calc' : 'p1_calc')} className="py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-all"><Undo2 size={18}/> 修改數據</button>
-            <button onClick={handleReset} className="py-4 bg-slate-200 text-slate-600 rounded-2xl font-black text-sm shadow-sm flex items-center justify-center gap-2 hover:bg-rose-100 hover:text-rose-600 transition-all"><RefreshCcw size={18}/> 重新體檢</button>
+            <button onClick={exportToCSV} style={wpBtn({ paddingTop:'1rem', paddingBottom:'1rem', backgroundColor:'#059669', color:'#ffffff', borderRadius:'1rem', fontWeight:'900', fontSize:'0.875rem', boxShadow:'0 4px 6px -1px rgba(0,0,0,0.1)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem' })} className="py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all"><Download size={18}/> 導出報表 (CSV)</button>
+            <button onClick={() => setStep(isMarried ? 'p2_calc' : 'p1_calc')} style={wpBtn({ paddingTop:'1rem', paddingBottom:'1rem', backgroundColor:'#2563eb', color:'#ffffff', borderRadius:'1rem', fontWeight:'900', fontSize:'0.875rem', boxShadow:'0 4px 6px -1px rgba(0,0,0,0.1)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem' })} className="py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-all"><Undo2 size={18}/> 修改數據</button>
+            <button onClick={handleReset} style={wpBtn({ paddingTop:'1rem', paddingBottom:'1rem', backgroundColor:'#e2e8f0', color:'#475569', borderRadius:'1rem', fontWeight:'900', fontSize:'0.875rem', boxShadow:'0 1px 2px 0 rgba(0,0,0,0.05)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem' })} className="py-4 bg-slate-200 text-slate-600 rounded-2xl font-black text-sm shadow-sm flex items-center justify-center gap-2 hover:bg-rose-100 hover:text-rose-600 transition-all"><RefreshCcw size={18}/> 重新體檢</button>
           </div>
 
           {!isEligible && (
             <div className="bg-amber-50 p-8 rounded-[2.5rem] border-2 border-amber-100 space-y-6">
-              <h4 className="text-xl font-black text-amber-800 flex items-center gap-2"><ShieldCheck size={24} /> 專業優化建議範例</h4>
+              <h4 className="text-xl font-black text-amber-800 flex items-center gap-2" style={{ fontSize: '1.25rem', fontWeight: '900', color: '#92400e' }}><ShieldCheck size={24} /> 專業優化建議範例</h4>
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="p-5 bg-white rounded-2xl border border-amber-200 shadow-sm">
                   <p className="font-black text-amber-900 mb-1">資產分流建議</p>
