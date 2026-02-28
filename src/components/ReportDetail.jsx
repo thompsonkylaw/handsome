@@ -295,27 +295,100 @@ const ReportDetail = () => {
   const [toast, setToast] = useState(null);
 
   // NumberPad popup state
-  const [numpad, setNumpad] = useState({ show: false, value: '', allowDecimal: true });
+  const [numpad, setNumpad] = useState({ show: false, value: '', allowDecimal: true, fresh: false });
   const numpadCallbackRef = useRef(null);
   const numpadAnchorRef = useRef(null);
+
+  const focusAndSelectAll = (element) => {
+    const control = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement
+      ? element
+      : element?.querySelector?.('input, textarea');
+    if (!control) return;
+
+    window.requestAnimationFrame(() => {
+      try {
+        control.focus();
+        if (typeof control.select === 'function') control.select();
+        const len = String(control.value ?? '').length;
+        if (typeof control.setSelectionRange === 'function') control.setSelectionRange(0, len);
+      } catch {
+        // ignore
+      }
+    });
+  };
 
   const openNumpad = (currentValue, callback, options = {}) => {
     const { allowDecimal = true } = options;
     numpadCallbackRef.current = callback;
-    setNumpad({ show: true, value: currentValue ? String(currentValue) : '', allowDecimal });
+    focusAndSelectAll(numpadAnchorRef.current);
+    setNumpad({ show: true, value: currentValue ? String(currentValue) : '', allowDecimal, fresh: true });
   };
 
   const handleNumpadInput = (key) => setNumpad(prev => {
-    if (key === '.' && prev.value.includes('.')) return prev;
-    return { ...prev, value: prev.value + key };
+    if (key === '.' && prev.allowDecimal === false) return prev;
+    if (!prev.fresh && key === '.' && prev.value.includes('.')) return prev;
+
+    if (prev.fresh) {
+      return { ...prev, value: key === '.' ? '0.' : key, fresh: false };
+    }
+
+    return { ...prev, value: prev.value + key, fresh: false };
   });
-  const handleNumpadDelete = () => setNumpad(prev => ({ ...prev, value: prev.value.slice(0, -1) }));
-  const handleNumpadClear = () => setNumpad(prev => ({ ...prev, value: '' }));
+  const handleNumpadDelete = () => setNumpad(prev => ({ ...prev, value: prev.value.slice(0, -1), fresh: false }));
+  const handleNumpadClear = () => setNumpad(prev => ({ ...prev, value: '', fresh: false }));
   const handleNumpadConfirm = () => {
     numpadCallbackRef.current = null;
     numpadAnchorRef.current = null;
-    setNumpad({ show: false, value: '', allowDecimal: true });
+    setNumpad({ show: false, value: '', allowDecimal: true, fresh: false });
   };
+
+  // Allow physical keyboard input while the numpad popup is open
+  useEffect(() => {
+    if (!numpad.show) return;
+
+    const onKeyDown = (e) => {
+      if (e.defaultPrevented) return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      const key = e.key;
+
+      // Close
+      if (key === 'Enter' || key === 'Escape') {
+        e.preventDefault();
+        handleNumpadConfirm();
+        return;
+      }
+
+      // Delete / Clear
+      if (key === 'Backspace') {
+        e.preventDefault();
+        handleNumpadDelete();
+        return;
+      }
+      if (key === 'Delete') {
+        e.preventDefault();
+        handleNumpadClear();
+        return;
+      }
+
+      // Numeric input
+      if (key >= '0' && key <= '9') {
+        e.preventDefault();
+        handleNumpadInput(key);
+        return;
+      }
+
+      // Decimal
+      if (key === '.') {
+        if (!numpad.allowDecimal) return;
+        e.preventDefault();
+        handleNumpadInput('.');
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [numpad.show, numpad.allowDecimal]);
 
   // Real-time sync: update the field as the user types on the numpad
   useEffect(() => {

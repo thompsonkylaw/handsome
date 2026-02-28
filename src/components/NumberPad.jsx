@@ -15,6 +15,11 @@ const NumberPad = ({
   onConfirm, 
   allowDecimal = true 
 }) => {
+  const keepInputFocus = (e) => {
+    // Prevent buttons from stealing focus (so physical keyboard keeps working)
+    if (e?.preventDefault) e.preventDefault();
+  };
+
   const handleClick = (key) => {
     if (key === 'AC') {
       if (onClear) onClear();
@@ -136,6 +141,7 @@ const NumberPad = ({
         {keys.map((key) => (
           <button
             key={key}
+            onMouseDown={keepInputFocus}
             onClick={() => handleClick(key)}
             className={`
               numpad-btn 
@@ -149,6 +155,7 @@ const NumberPad = ({
 
         {/* DELETE BUTTON */}
         <button 
+          onMouseDown={keepInputFocus}
           onClick={onDelete} 
           className="numpad-btn btn-del"
           aria-label="Delete"
@@ -159,6 +166,7 @@ const NumberPad = ({
 
         {/* OK BUTTON */}
         <button 
+          onMouseDown={keepInputFocus}
           onClick={onConfirm} 
           className="numpad-btn btn-ok"
           style={{ gridColumn: 'span 1' }}
