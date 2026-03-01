@@ -7,10 +7,12 @@ import {
   CheckCircle2, XCircle, ArrowRight, ArrowLeft, ShieldCheck, 
   Undo2, Plus, Trash2, Phone, UserCircle, Calendar, ClipboardList,
   Home, Building2, ListChecks, Download, RefreshCcw, PieChart, Activity, Info,
-  PiggyBank, Wallet, Construction, Settings, X
+  PiggyBank, Wallet, Construction, Settings, X, FileText
 } from 'lucide-react';
 import NumberPad from './NumberPad';
+import PDFReportContent from './PDFReportContent';
 import { wpBtn, wpInput, wpSelect } from '../wpStyles';
+import { generateAssessmentPDF } from '../generatePDF';
 
 const COMPANIES = [
   { color: '#009739', company: 'Manulife' },
@@ -40,6 +42,8 @@ const createEmptyPerson = () => ({
     land: { enabled: false, value: 0, label: "土地及車位" },
     business: { enabled: false, value: 0, label: "商業資產 (店鋪/公司)" },
     vehicle: { enabled: false, value: 0, label: "營運車輛 (如的士/小巴)" },
+    policySavings: { enabled: false, value: 0, label: "保單價值(儲蓄)" },
+    policyLife: { enabled: false, value: 0, label: "保單價值(人夀,危疾)" },
   },
   propertyEnabled: false,
   properties: [{ id: Date.now(), type: '自住物業', value: 0 }],
@@ -212,6 +216,8 @@ const AssessmentForm = () => {
   const [numpad, setNumpad] = useState({ show: false, value: '', allowDecimal: true, fresh: false });
   const numpadCallbackRef = useRef(null);
   const numpadAnchorRef = useRef(null);
+  const resultCardRef = useRef(null);
+  const pdfReportRef = useRef(null);
 
   const focusAndSelectAll = (element) => {
     const control = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement
@@ -387,6 +393,16 @@ const AssessmentForm = () => {
     setP2(createEmptyPerson());
     setIsMarried(false);
     setStep('landing');
+  };
+
+  const handleGeneratePDF = async () => {
+    try {
+      await generateAssessmentPDF({ resultNode: pdfReportRef.current, fileName: p1.name || 'Assessment' });
+    } catch (error) {
+      console.error('PDF export failed:', error);
+      const errorMsg = error?.message ? `\n\n錯誤：${error.message}` : '';
+      window.alert(`PDF 生成失敗，請稍後再試。${errorMsg}`);
+    }
   };
 
   const exportToCSV = () => {
@@ -836,7 +852,7 @@ const AssessmentForm = () => {
           </div>
         )}
         
-        <div className="max-w-4xl w-full space-y-6">
+        <div ref={resultCardRef} className="max-w-4xl w-full space-y-6">
           {/* Main Status Card */}
           <div className={`p-8 rounded-[3rem] shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 transition-all duration-700 ${isEligible ? 'bg-gradient-to-br from-emerald-500 to-teal-600' : 'bg-gradient-to-br from-rose-500 to-red-600'}`}>
             <div className="flex items-center gap-6 text-white text-center md:text-left flex-col md:flex-row">
@@ -867,7 +883,7 @@ const AssessmentForm = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
             <button 
               onClick={saveToDatabase}
               disabled={saveStatus === 'saving' || saveStatus === 'success'}
@@ -881,6 +897,7 @@ const AssessmentForm = () => {
             <button onClick={exportToCSV} style={wpBtn({ paddingTop:'1rem', paddingBottom:'1rem', backgroundColor:'#059669', color:'#ffffff', borderRadius:'1rem', fontWeight:'900', fontSize:'0.875rem', boxShadow:'0 4px 6px -1px rgba(0,0,0,0.1)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem' })} className="py-4 bg-emerald-600 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all"><Download size={18}/> 導出報表 (CSV)</button>
             <button onClick={() => setStep(isMarried ? 'p2_calc' : 'p1_calc')} style={wpBtn({ paddingTop:'1rem', paddingBottom:'1rem', backgroundColor:'#2563eb', color:'#ffffff', borderRadius:'1rem', fontWeight:'900', fontSize:'0.875rem', boxShadow:'0 4px 6px -1px rgba(0,0,0,0.1)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem' })} className="py-4 bg-blue-600 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-blue-700 transition-all"><Undo2 size={18}/> 修改數據</button>
             <button onClick={handleReset} style={wpBtn({ paddingTop:'1rem', paddingBottom:'1rem', backgroundColor:'#e2e8f0', color:'#475569', borderRadius:'1rem', fontWeight:'900', fontSize:'0.875rem', boxShadow:'0 1px 2px 0 rgba(0,0,0,0.05)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem' })} className="py-4 bg-slate-200 text-slate-600 rounded-2xl font-black text-sm shadow-sm flex items-center justify-center gap-2 hover:bg-rose-100 hover:text-rose-600 transition-all"><RefreshCcw size={18}/> 重新體檢</button>
+            <button onClick={handleGeneratePDF} style={wpBtn({ paddingTop:'1rem', paddingBottom:'1rem', backgroundColor:'#7c3aed', color:'#ffffff', borderRadius:'1rem', fontWeight:'900', fontSize:'0.875rem', boxShadow:'0 4px 6px -1px rgba(0,0,0,0.1)', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.5rem' })} className="py-4 bg-violet-600 text-white rounded-2xl font-black text-sm shadow-md flex items-center justify-center gap-2 hover:bg-violet-700 transition-all"><FileText size={18}/> 建立 PDF 報告</button>
           </div>
 
           {!isEligible && (
@@ -907,6 +924,21 @@ const AssessmentForm = () => {
             <Info className="text-slate-400 shrink-0" size={20} />
             <p className="text-[10px] text-slate-500 font-bold leading-relaxed italic">免責聲明：本報告基於 2025/2026 年度預期政策指引生成。計算結果僅供參考，最終申請資格、資產定義及批核結果以香港社會福利署之最終決定為準。</p>
           </div>
+        </div>
+
+        {/* Hidden PDF Report – rendered off-screen for capture */}
+        <div ref={pdfReportRef} style={{ position: 'absolute', left: '-9999px', top: 0, zIndex: -1, opacity: 0, pointerEvents: 'none' }}>
+          <PDFReportContent
+            p1={p1}
+            p2={p2}
+            isMarried={isMarried}
+            p1Analysis={p1Analysis}
+            p2Analysis={p2Analysis}
+            totalAssets={totalAssets}
+            totalIncome={totalIncome}
+            currentLimit={currentLimit}
+            isEligible={isEligible}
+          />
         </div>
       </div>
     );

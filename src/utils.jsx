@@ -32,7 +32,7 @@ export const getPersonAnalysis = (person, isMarried) => {
   // 1. Core Assets
   Object.entries(person.assets).forEach(([key, item]) => {
     if (item.enabled && item.value > 0) {
-      details.push({ label: item.label, value: item.value, type: 'asset', isExempt: false, category: '基礎' });
+      details.push({ label: item.label, value: item.value, type: 'asset', isExempt: item.isExempt || false, category: '基礎' });
     }
   });
 
