@@ -13,8 +13,8 @@ if (apiUrl && !apiUrl.includes('localhost') && !apiUrl.includes('127.0.0.1')) {
     apiUrl = apiUrl.replace('http://', 'https://');
   }
 }
-console.log('Debug - VITE_API_URL:', import.meta.env.VITE_API_URL);
-console.log('Debug - Computed API_BASE_URL:', apiUrl);
+// console.log('Debug - VITE_API_URL:', import.meta.env.VITE_API_URL);
+// console.log('Debug - Computed API_BASE_URL:', apiUrl);
 export const API_BASE_URL = apiUrl;
 
 export const formatCurrency = (num) => {

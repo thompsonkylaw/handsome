@@ -25,13 +25,16 @@ export default defineConfig({
     }
   },
   build: {
+    target: 'es2015',
     rollupOptions: {
       output: {
+        format: 'iife',
+        name: 'HandsomeApp14',
         manualChunks: undefined,
         inlineDynamicImports: true,
-        entryFileNames: `index-${timestamp}.js`,
-        chunkFileNames: `index-${timestamp}.js`,
-        assetFileNames: `index-${timestamp}.[ext]`
+        entryFileNames: `assets/index-${timestamp}.js`,
+        chunkFileNames: `assets/index-${timestamp}.js`,
+        assetFileNames: `assets/index-${timestamp}.[ext]`
       }
     }
   }

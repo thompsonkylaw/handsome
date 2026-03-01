@@ -23,8 +23,8 @@ const s = {
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
-  headerTitle: { fontSize: 22, fontWeight: 900, letterSpacing: -0.5, margin: 0 },
-  headerSub: { fontSize: 12, opacity: 0.8, marginTop: 4, fontWeight: 600 },
+  headerTitle: { fontSize: 22, fontWeight: 900, letterSpacing: -0.5, margin: 0, color: '#ffffff', WebkitTextFillColor: '#ffffff' },
+  headerSub: { fontSize: 12, opacity: 0.8, marginTop: 4, fontWeight: 600, color: '#ffffff', WebkitTextFillColor: '#ffffff' },
   headerBadge: {
     backgroundColor: 'rgba(255,255,255,0.15)',
     padding: '8px 14px',
@@ -32,8 +32,8 @@ const s = {
     textAlign: 'center',
     border: '1px solid rgba(255,255,255,0.2)',
   },
-  headerBadgeYear: { fontSize: 16, fontWeight: 900, letterSpacing: 1 },
-  headerBadgeLabel: { fontSize: 9, textTransform: 'uppercase', letterSpacing: 2, opacity: 0.7 },
+  headerBadgeYear: { fontSize: 16, fontWeight: 900, letterSpacing: 1, color: '#ffffff', WebkitTextFillColor: '#ffffff' },
+  headerBadgeLabel: { fontSize: 9, textTransform: 'uppercase', letterSpacing: 2, opacity: 0.7, color: '#ffffff', WebkitTextFillColor: '#ffffff' },
 
   // Body
   body: { padding: '20px 28px' },

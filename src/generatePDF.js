@@ -12,7 +12,8 @@ async function renderNodeToPng(node, pixelRatio) {
       cacheBust: true,
       pixelRatio,
       backgroundColor: '#ffffff',
-      skipFonts: false,
+      skipFonts: true,
+      fontEmbedCSS: '',
     });
   } catch {
     return await toPng(node, {
@@ -20,6 +21,7 @@ async function renderNodeToPng(node, pixelRatio) {
       pixelRatio,
       backgroundColor: '#ffffff',
       skipFonts: true,
+      fontEmbedCSS: '',
       filter: (target) => target?.tagName !== 'IFRAME',
     });
   }
